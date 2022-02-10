@@ -1,0 +1,783 @@
+.org 000000H
+.assume ADL=0
+	di
+	stmix
+	call.il init
+.fill 256-$
+	jp.lil putch
+	jp.lil getch
+	jp.lil kbhit
+	jp.lil diskread_compat
+	jp.lil diskwrite_compat
+	jp.lil sistran_compat
+	jp.lil diskerrchk_compat
+;UC1
+	jp.lil rs232c_out
+	jp.lil rs232c_in
+	jp.lil rs232c_st
+;LPT
+	jp.lil prn_out
+	jp.lil invaliddev_in
+	jp.lil prn_st
+;UL1
+	jp.lil invaliddev_out
+	jp.lil invaliddev_in
+	jp.lil invaliddev_st
+;UP1
+	jp.lil invaliddev_out
+	jp.lil invaliddev_in
+	jp.lil invaliddev_st
+;UP2
+	jp.lil invaliddev_out
+	jp.lil invaliddev_in
+	jp.lil invaliddev_st
+;UR1
+	jp.lil invaliddev_out
+	jp.lil invaliddev_in
+	jp.lil invaliddev_st
+;UR2
+	jp.lil invaliddev_out
+	jp.lil invaliddev_in
+	jp.lil invaliddev_st
+;TTY
+	jp.lil invaliddev_out
+	jp.lil invaliddev_in
+	jp.lil invaliddev_st
+
+	jp.lil add_prc
+	jp.lil get_prc_id
+	jp.lil ter_prc
+	jp.lil ter_prc_other
+init:
+.assume ADL=1
+	stmix
+	im 2
+	ld hl,vector >> 8 & 0ffffh
+	ld i,hl
+	ld a,1
+	ld (backupstk+36),a
+	ld a,i
+	ld sp,spsp4mp
+	ei
+	;ld hl,z80prctest
+	;call add_prc
+	;ld hl,lplp2
+	;call add_prc
+	jp.lil 010000h
+lplp:
+	jp lplp
+	halt
+
+retsequence1
+	ld.lil (compatstack+0),bc
+	ld.lil (compatstack+3),de
+	ld.lil (compatstack+6),hl
+	ld.lil (compatstack+9),sp
+	ld.lil (compatstack+12),a
+	ret
+retsequence2:
+	pop hl
+	push hl
+	bit 0,l
+	jr nz,retsequence2_1
+	ld.lil bc,(compatstack+0)
+	ld.lil de,(compatstack+3)
+	ld.lil hl,(compatstack+6)
+	ld.lil sp,(compatstack+9)
+	ld.lil a,(compatstack+12)
+	ei
+	ret.l
+retsequence2_1:
+	ld.lil bc,(compatstack+0)
+	ld.lil de,(compatstack+3)
+	ld.lil hl,(compatstack+6)
+	ld.lil sp,(compatstack+9)
+	ld.lil a,(compatstack+12)
+	ei
+	ret
+
+
+putch:
+	di
+	ld.lil (compatstack+0),bc
+	ld.lil (compatstack+3),de
+	ld.lil (compatstack+6),hl
+	ld.lil (compatstack+9),sp
+	ld.lil (compatstack+12),a
+	call bios_putch
+	jp retsequence2
+
+
+
+getch:
+	di
+	ld.lil (compatstack+0),bc
+	ld.lil (compatstack+3),de
+	ld.lil (compatstack+6),hl
+	ld.lil (compatstack+9),sp
+	ld.lil (compatstack+12),a
+	call bios_getch
+	jp retsequence2
+kbhit:
+	di
+	ld.lil (compatstack+0),bc
+	ld.lil (compatstack+3),de
+	ld.lil (compatstack+6),hl
+	ld.lil (compatstack+9),sp
+	ld.lil (compatstack+12),a
+	call bios_kbhit
+	jp retsequence2
+
+diskread_compat:
+	di
+	ld.lil (compatstack+0),bc
+	ld.lil (compatstack+3),de
+	ld.lil (compatstack+6),hl
+	ld.lil (compatstack+9),sp
+	ld.lil (compatstack+12),a
+	ld a,0ffh
+	jp retsequence2
+
+diskwrite_compat:
+	di
+	ld.lil (compatstack+0),bc
+	ld.lil (compatstack+3),de
+	ld.lil (compatstack+6),hl
+	ld.lil (compatstack+9),sp
+	ld.lil (compatstack+12),a
+	ld a,0ffh
+	jp retsequence2
+
+diskerrchk_compat:
+	di
+	ld.lil (compatstack+0),bc
+	ld.lil (compatstack+3),de
+	ld.lil (compatstack+6),hl
+	ld.lil (compatstack+9),sp
+	ld.lil (compatstack+12),a
+	ld a,0ffh
+	jp retsequence2
+
+rs232c_out:
+prn_out:
+invaliddev_out:
+	di
+	ld.lil (compatstack+0),bc
+	ld.lil (compatstack+3),de
+	ld.lil (compatstack+6),hl
+	ld.lil (compatstack+9),sp
+	ld.lil (compatstack+12),a
+	jp retsequence2
+rs232c_in:
+invaliddev_in:
+	di
+	ld.lil (compatstack+0),bc
+	ld.lil (compatstack+3),de
+	ld.lil (compatstack+6),hl
+	ld.lil (compatstack+9),sp
+	ld.lil (compatstack+12),a
+	ld a,0h
+	jp retsequence2
+rs232c_st:
+prn_st:
+invaliddev_st:
+	di
+	ld.lil (compatstack+0),bc
+	ld.lil (compatstack+3),de
+	ld.lil (compatstack+6),hl
+	ld.lil (compatstack+9),sp
+	ld.lil (compatstack+12),a
+	ld a,0h
+	jp retsequence2
+
+sistran_compat:
+	di
+	ld.lil (compatstack+0),bc
+	ld.lil (compatstack+3),de
+	ld.lil (compatstack+6),hl
+	ld.lil (compatstack+9),sp
+	ld.lil (compatstack+12),a
+	pop hl
+	ld l,02h
+	push hl
+	jp retsequence2
+
+compatstack:
+.fill 256
+
+z80prctest:
+	ld sp,02FF00h
+	ld a,2
+	ld mb,a
+	ld a,0c3h
+	ld (020000h),a
+	ld a,049h
+	ld (02EFFEh),a
+	ld a,0c9h
+	ld (02EFFFh),a
+	call.is 0
+lplp2:
+	jp lplp2
+
+get_prc_id:
+	ld a,(pid)
+	ret
+
+add_prc:
+	di
+	ld (backupstk4hl),hl
+	ld (backupstk+0),bc
+	ld (backupstk+3),de
+	ld (backupstk+6),hl
+	ld (backupstk+9),ix
+	ld (backupstk+12),iy
+	exx
+	ld (backupstk+15),bc
+	ld (backupstk+18),de
+	ld (backupstk+21),hl
+	exx
+	ld (backupstk+24),sp
+	pop hl
+	ld (backupstk+27),hl
+	pop hl
+	ld (backupstk+30),hl
+	ld sp,spsp
+	push af
+	pop hl
+	push hl
+	ld (backupstk+33),hl
+	ld a,mb
+	ld (backupstk+37),a
+	ld a,(pid)
+	ex de,hl
+	ld de,45
+	ld hl,backupstk4p
+	and a
+	jr z,add_prc_lplp1bp
+add_prc_lplp1:
+	add hl,de
+	dec a
+	jr nz,add_prc_lplp1
+add_prc_lplp1bp:
+	ex de,hl
+	ld hl,backupstk
+	ld bc,45
+	ldir
+add_prc_lplpk:
+	ld a,(pid)
+	inc a
+	ld (pid),a
+	ld de,45
+	ld hl,backupstk4p
+	and a
+	jr z,add_prc_lplp2bp
+add_prc_lplp2:
+	add hl,de
+	dec a
+	jr nz,add_prc_lplp2
+add_prc_lplp2bp:
+	ld de,backupstk
+	ld bc,45
+	ldir
+	ld a,(backupstk+36)
+	bit 0,a
+	jr nz,add_prc_lplpk
+	set 0,a
+	ld (backupstk+36),a
+	ld a,(pid)
+	ex de,hl
+	ld de,45
+	ld hl,backupstk4p
+	and a
+	jr z,add_prc_lplp3bp
+add_prc_lplp3:
+	add hl,de
+	dec a
+	jr nz,add_prc_lplp3
+add_prc_lplp3bp:
+	ex de,hl
+	ld hl,backupstk
+	ld bc,45
+	ldir
+	ld hl,(backupstk4hl)
+	ei
+	jp (hl)
+
+ter_prc:
+	ld a,(pid)
+ter_prc_other:
+	ld de,45
+	ld hl,backupstk4p
+	and a
+	jr z,ter_prc_lplp1bp
+ter_prc_lplp1:
+	add hl,de
+	dec a
+	jr nz,ter_prc_lplp1
+ter_prc_lplp1bp:
+	ld bc,45
+ter_prc_lplp1bpx:
+	ld a,0
+	ld (hl),a
+	inc hl
+	djnz ter_prc_lplp1bpx
+	ld (pid),a
+	jp preemptive_lplpkk
+	
+
+backupstk4hl:
+.dl 0,0,0
+
+preemptive:
+	di
+	jp.il preemptive_lr
+preemptive_aft:
+	bit 0,a
+	jr z,preemptive_aft_16bit
+	ld sp,backupstk+33
+	pop af
+	ld sp,(backupstk+24)
+	ei
+	reti.l
+preemptive_aft_16bit:
+	ld sp,backupstk+33
+	pop af
+	ld sp,(backupstk+24)
+	ei
+	reti
+preemptive_lr:
+	ld (backupstk+0),bc
+	ld (backupstk+3),de
+	ld (backupstk+6),hl
+	ld (backupstk+9),ix
+	ld (backupstk+12),iy
+	exx
+	ld (backupstk+15),bc
+	ld (backupstk+18),de
+	ld (backupstk+21),hl
+	exx
+	ld (backupstk+24),sp
+	pop hl
+	ld (backupstk+27),hl
+	pop hl
+	ld (backupstk+30),hl
+	ld sp,spsp
+	push af
+	pop hl
+	push hl
+	ld (backupstk+33),hl
+	ld a,mb
+	ld (backupstk+37),a
+	ld a,(pid)
+	ex de,hl
+	ld de,45
+	ld hl,backupstk4p
+	and a
+	jr z,preemptive_lplp1bp
+preemptive_lplp1:
+	add hl,de
+	dec a
+	jr nz,preemptive_lplp1
+preemptive_lplp1bp:
+	ex de,hl
+	ld hl,backupstk
+	ld bc,45
+	ldir
+preemptive_lplpk:
+	ld a,(pid)
+	inc a
+	ld (pid),a
+preemptive_lplpkk:
+	ld de,45
+	ld hl,backupstk4p
+	and a
+	jr z,preemptive_lplp2bp
+preemptive_lplp2:
+	add hl,de
+	dec a
+	jr nz,preemptive_lplp2
+preemptive_lplp2bp:
+	ld de,backupstk
+	ld bc,45
+	ldir
+	ld a,(backupstk+36)
+	bit 0,a
+	jr z,preemptive_lplpk
+	ld sp,(backupstk+24)
+	ld bc,(backupstk+0)
+	ld de,(backupstk+3)
+	ld hl,(backupstk+6)
+	ld ix,(backupstk+9)
+	ld iy,(backupstk+12)
+	exx
+	ld bc,(backupstk+15)
+	ld de,(backupstk+18)
+	ld hl,(backupstk+21)
+	exx
+	ld a,(backupstk+37)
+	ld mb,a
+	ld a,(backupstk+27)
+	jp preemptive_aft
+backupstk:
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.fill 256-($%256)
+vector:
+.dl preemptive
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+.dl 0
+
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+spsp:
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+backupstk4p:
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+pid:
+.db 0
+
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+spsp4mp:
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+
+.fill 256-($%256)
+
+bios_putch: .equ $+(5*0)
+bios_getch: .equ $+(5*1)
+bios_kbhit: .equ $+(5*2)
