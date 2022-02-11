@@ -48,11 +48,19 @@
 	jp.lil get_prc_id
 	jp.lil ter_prc
 	jp.lil ter_prc_other
+
 	jp.lil _fopen
 	jp.lil _fseek
 	jp.lil _fread
 	jp.lil _fwrite
 	jp.lil _fclose
+
+	jp.lil preemptive
+
+	jp.lil get_prc_consid
+	jp.lil set_prc_consid
+
+	jp.lil get_fsstk_ptr
 init:
 .assume ADL=1
 	stmix
@@ -72,6 +80,14 @@ init:
 lplp:
 	jp lplp
 	halt
+
+set_prc_consid:
+	ld (backupstk+38),a
+	ret
+
+get_prc_consid:
+	ld a,(backupstk+38)
+	ret
 
 retsequence1
 	ld.lil (compatstack+0),bc
@@ -133,10 +149,104 @@ kbhit:
 	ld sp,spsp4mp
 	call bios_kbhit
 	jp retsequence2
+
+get_fsstk_ptr:
+	ld hl,fsstk
+	ret
+
+fsstk:
+.dl 0,0,0,0,0,0,0,0
+
 _fopen:
+	di
+	ld.lil (compatstack+0),bc
+	ld.lil (compatstack+3),de
+	ld.lil (compatstack+6),hl
+	ld.lil (compatstack+9),sp
+	ld.lil (compatstack+12),a
+	pop hl
+	ld hl,0
+	ld (fsstk+(3*0)),hl
+	pop hl
+	ld (fsstk+(3*1)),hl
+	pop hl
+	ld (fsstk+(3*2)),hl
+	ld sp,spsp4mp
+	call bios_fsdrv
+	ld.lil (compatstack+6),hl
+	jp retsequence2
+	ret
+
 _fseek:
+	di
+	ld.lil (compatstack+0),bc
+	ld.lil (compatstack+3),de
+	ld.lil (compatstack+6),hl
+	ld.lil (compatstack+9),sp
+	ld.lil (compatstack+12),a
+	pop hl
+	ld hl,1
+	ld (fsstk+(3*0)),hl
+	pop hl
+	ld (fsstk+(3*1)),hl
+	pop hl
+	ld (fsstk+(3*2)),hl
+	pop hl
+	ld (fsstk+(3*3)),hl
+	ld sp,spsp4mp
+	call bios_fsdrv
+	ld.lil (compatstack+6),hl
+	jp retsequence2
+	ret
+
 _fread:
+	di
+	ld.lil (compatstack+0),bc
+	ld.lil (compatstack+3),de
+	ld.lil (compatstack+6),hl
+	ld.lil (compatstack+9),sp
+	ld.lil (compatstack+12),a
+	pop hl
+	ld hl,2
+	ld (fsstk+(3*0)),hl
+	pop hl
+	ld (fsstk+(3*1)),hl
+	pop hl
+	ld (fsstk+(3*2)),hl
+	pop hl
+	ld (fsstk+(3*3)),hl
+	pop hl
+	ld (fsstk+(3*4)),hl
+	ld sp,spsp4mp
+	call bios_fsdrv
+	ld.lil (compatstack+6),hl
+	jp retsequence2
+	ret
+
 _fwrite:
+	di
+	ld.lil (compatstack+0),bc
+	ld.lil (compatstack+3),de
+	ld.lil (compatstack+6),hl
+	ld.lil (compatstack+9),sp
+	ld.lil (compatstack+12),a
+	pop hl
+	ld hl,3
+	ld (fsstk+(3*0)),hl
+	pop hl
+	ld (fsstk+(3*1)),hl
+	pop hl
+	ld (fsstk+(3*2)),hl
+	pop hl
+	ld (fsstk+(3*3)),hl
+	pop hl
+	ld (fsstk+(3*4)),hl
+	ld sp,spsp4mp
+	call bios_fsdrv
+	ld.lil (compatstack+6),hl
+	jp retsequence2
+	ret
+
 _fclose:
 	di
 	ld.lil (compatstack+0),bc
@@ -144,8 +254,13 @@ _fclose:
 	ld.lil (compatstack+6),hl
 	ld.lil (compatstack+9),sp
 	ld.lil (compatstack+12),a
+	pop hl
+	ld hl,4
+	ld (fsstk+(3*0)),hl
+	pop hl
+	ld (fsstk+(3*1)),hl
 	ld sp,spsp4mp
-	ld hl,0h
+	call bios_fsdrv
 	ld.lil (compatstack+6),hl
 	jp retsequence2
 	ret
@@ -923,3 +1038,4 @@ spsp4mp:
 bios_putch: .equ $+(5*0)
 bios_getch: .equ $+(5*1)
 bios_kbhit: .equ $+(5*2)
+bios_fsdrv: .equ $+(5*3)
