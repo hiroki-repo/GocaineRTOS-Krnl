@@ -117,6 +117,27 @@ retsequence2_1:
 	ei
 	ret
 
+retsequence2p16:
+	pop hl
+	push hl
+	bit 0,l
+	jr nz,retsequence2p16_1
+	ld.lil bc,(compatstack+16+0)
+	ld.lil de,(compatstack+16+3)
+	ld.lil hl,(compatstack+16+6)
+	ld.lil sp,(compatstack+16+9)
+	ld.lil a,(compatstack+16+12)
+	ei
+	ret.l
+retsequence2p16_1:
+	ld.lil bc,(compatstack+16+0)
+	ld.lil de,(compatstack+16+3)
+	ld.lil hl,(compatstack+16+6)
+	ld.lil sp,(compatstack+16+9)
+	ld.lil a,(compatstack+16+12)
+	ei
+	ret
+
 
 putch:
 	di
@@ -161,11 +182,11 @@ fsstk:
 
 _fopen:
 	di
-	ld.lil (compatstack+0),bc
-	ld.lil (compatstack+3),de
-	ld.lil (compatstack+6),hl
-	ld.lil (compatstack+9),sp
-	ld.lil (compatstack+12),a
+	ld.lil (compatstack+16+0),bc
+	ld.lil (compatstack+16+3),de
+	ld.lil (compatstack+16+6),hl
+	ld.lil (compatstack+16+9),sp
+	ld.lil (compatstack+16+12),a
 	pop hl
 	ld hl,0
 	ld (fsstk+(3*0)),hl
@@ -175,17 +196,17 @@ _fopen:
 	ld (fsstk+(3*2)),hl
 	ld sp,spsp4mp
 	call bios_fsdrv
-	ld.lil (compatstack+6),hl
-	jp retsequence2
+	ld.lil (compatstack+16+6),hl
+	jp retsequence2p16
 	ret
 
 _fseek:
 	di
-	ld.lil (compatstack+0),bc
-	ld.lil (compatstack+3),de
-	ld.lil (compatstack+6),hl
-	ld.lil (compatstack+9),sp
-	ld.lil (compatstack+12),a
+	ld.lil (compatstack+16+0),bc
+	ld.lil (compatstack+16+3),de
+	ld.lil (compatstack+16+6),hl
+	ld.lil (compatstack+16+9),sp
+	ld.lil (compatstack+16+12),a
 	pop hl
 	ld hl,1
 	ld (fsstk+(3*0)),hl
@@ -197,17 +218,17 @@ _fseek:
 	ld (fsstk+(3*3)),hl
 	ld sp,spsp4mp
 	call bios_fsdrv
-	ld.lil (compatstack+6),hl
-	jp retsequence2
+	ld.lil (compatstack+16+6),hl
+	jp retsequence2p16
 	ret
 
 _fread:
 	di
-	ld.lil (compatstack+0),bc
-	ld.lil (compatstack+3),de
-	ld.lil (compatstack+6),hl
-	ld.lil (compatstack+9),sp
-	ld.lil (compatstack+12),a
+	ld.lil (compatstack+16+0),bc
+	ld.lil (compatstack+16+3),de
+	ld.lil (compatstack+16+6),hl
+	ld.lil (compatstack+16+9),sp
+	ld.lil (compatstack+16+12),a
 	pop hl
 	ld hl,2
 	ld (fsstk+(3*0)),hl
@@ -221,17 +242,17 @@ _fread:
 	ld (fsstk+(3*4)),hl
 	ld sp,spsp4mp
 	call bios_fsdrv
-	ld.lil (compatstack+6),hl
-	jp retsequence2
+	ld.lil (compatstack+16+6),hl
+	jp retsequence2p16
 	ret
 
 _fwrite:
 	di
-	ld.lil (compatstack+0),bc
-	ld.lil (compatstack+3),de
-	ld.lil (compatstack+6),hl
-	ld.lil (compatstack+9),sp
-	ld.lil (compatstack+12),a
+	ld.lil (compatstack+16+0),bc
+	ld.lil (compatstack+16+3),de
+	ld.lil (compatstack+16+6),hl
+	ld.lil (compatstack+16+9),sp
+	ld.lil (compatstack+16+12),a
 	pop hl
 	ld hl,3
 	ld (fsstk+(3*0)),hl
@@ -245,17 +266,17 @@ _fwrite:
 	ld (fsstk+(3*4)),hl
 	ld sp,spsp4mp
 	call bios_fsdrv
-	ld.lil (compatstack+6),hl
-	jp retsequence2
+	ld.lil (compatstack+16+6),hl
+	jp retsequence2p16
 	ret
 
 _fclose:
 	di
-	ld.lil (compatstack+0),bc
-	ld.lil (compatstack+3),de
-	ld.lil (compatstack+6),hl
-	ld.lil (compatstack+9),sp
-	ld.lil (compatstack+12),a
+	ld.lil (compatstack+16+0),bc
+	ld.lil (compatstack+16+3),de
+	ld.lil (compatstack+16+6),hl
+	ld.lil (compatstack+16+9),sp
+	ld.lil (compatstack+16+12),a
 	pop hl
 	ld hl,4
 	ld (fsstk+(3*0)),hl
@@ -263,8 +284,8 @@ _fclose:
 	ld (fsstk+(3*1)),hl
 	ld sp,spsp4mp
 	call bios_fsdrv
-	ld.lil (compatstack+6),hl
-	jp retsequence2
+	ld.lil (compatstack+16+6),hl
+	jp retsequence2p16
 	ret
 
 diskread_compat:
