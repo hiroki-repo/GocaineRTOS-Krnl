@@ -138,6 +138,7 @@ getch:
 	ld.lil (compatstack+12),a
 	ld sp,spsp4mp
 	call bios_getch
+	ld.lil (compatstack+12),a
 	jp retsequence2
 kbhit:
 	di
@@ -148,6 +149,7 @@ kbhit:
 	ld.lil (compatstack+12),a
 	ld sp,spsp4mp
 	call bios_kbhit
+	ld.lil (compatstack+12),a
 	jp retsequence2
 
 get_fsstk_ptr:
