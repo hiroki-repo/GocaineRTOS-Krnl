@@ -316,6 +316,7 @@ diskread_compat:
 	ld hl,fname4cpmcompat
 	push hl
 	call _fopen
+	di
 	ld (fp4cpmcompat),hl
 	pop bc
 	pop bc
@@ -352,6 +353,7 @@ diskread_compat:
 	ld hl,(fp4cpmcompat)
 	push hl
 	call _fseek
+	di
 	pop bc
 	pop bc
 	pop bc
@@ -369,6 +371,7 @@ diskread_compat:
 	ld h,a
 	push hl
 	call _fread
+	di
 	pop bc
 	pop bc
 	pop bc
@@ -377,6 +380,7 @@ diskread_compat:
 	ld hl,(fp4cpmcompat)
 	push hl
 	call _fclose
+	di
 	pop bc
 	ld a,0h
 	ld.lil (compatstack+12),a
@@ -405,6 +409,7 @@ diskwrite_compat:
 	ld hl,fname4cpmcompat
 	push hl
 	call _fopen
+	di
 	ld (fp4cpmcompat),hl
 	pop bc
 	pop bc
@@ -441,6 +446,7 @@ diskwrite_compat:
 	ld hl,(fp4cpmcompat)
 	push hl
 	call _fseek
+	di
 	pop bc
 	pop bc
 	pop bc
@@ -458,6 +464,7 @@ diskwrite_compat:
 	ld h,a
 	push hl
 	call _fwrite
+	di
 	pop bc
 	pop bc
 	pop bc
@@ -466,6 +473,7 @@ diskwrite_compat:
 	ld hl,(fp4cpmcompat)
 	push hl
 	call _fclose
+	di
 	pop bc
 	ld a,0h
 	ld.lil (compatstack+12),a
@@ -668,7 +676,7 @@ preemptive:
 	di
 	jp.il preemptive_lr
 preemptive_aft:
-	bit 0,a
+	bit 1,a
 	jr z,preemptive_aft_16bit
 	ld sp,backupstk+33
 	pop af
@@ -680,7 +688,7 @@ preemptive_aft_16bit:
 	pop af
 	ld sp,(backupstk+24)
 	ei
-	reti.l
+	reti
 preemptive_lr:
 	ld (backupstk+0),bc
 	ld (backupstk+3),de
