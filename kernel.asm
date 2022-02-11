@@ -48,6 +48,11 @@
 	jp.lil get_prc_id
 	jp.lil ter_prc
 	jp.lil ter_prc_other
+	jp.lil _fopen
+	jp.lil _fseek
+	jp.lil _fread
+	jp.lil _fwrite
+	jp.lil _fclose
 init:
 .assume ADL=1
 	stmix
@@ -104,10 +109,9 @@ putch:
 	ld.lil (compatstack+6),hl
 	ld.lil (compatstack+9),sp
 	ld.lil (compatstack+12),a
+	ld sp,spsp4mp
 	call bios_putch
 	jp retsequence2
-
-
 
 getch:
 	di
@@ -116,6 +120,7 @@ getch:
 	ld.lil (compatstack+6),hl
 	ld.lil (compatstack+9),sp
 	ld.lil (compatstack+12),a
+	ld sp,spsp4mp
 	call bios_getch
 	jp retsequence2
 kbhit:
@@ -125,8 +130,25 @@ kbhit:
 	ld.lil (compatstack+6),hl
 	ld.lil (compatstack+9),sp
 	ld.lil (compatstack+12),a
+	ld sp,spsp4mp
 	call bios_kbhit
 	jp retsequence2
+_fopen:
+_fseek:
+_fread:
+_fwrite:
+_fclose:
+	di
+	ld.lil (compatstack+0),bc
+	ld.lil (compatstack+3),de
+	ld.lil (compatstack+6),hl
+	ld.lil (compatstack+9),sp
+	ld.lil (compatstack+12),a
+	ld sp,spsp4mp
+	ld hl,0h
+	ld.lil (compatstack+6),hl
+	jp retsequence2
+	ret
 
 diskread_compat:
 	di
@@ -135,7 +157,64 @@ diskread_compat:
 	ld.lil (compatstack+6),hl
 	ld.lil (compatstack+9),sp
 	ld.lil (compatstack+12),a
+	ld sp,spsp4mp
+
+	ld hl,rmode4cpmcompat
+	push hl
+	ld hl,fname4cpmcompat
+	push hl
+	call _fopen
+	ld (fp4cpmcompat),hl
+	pop bc
+	pop bc
+	ld a,l
+	or a,h
+	jp z,disk_compaterr
+
+	ld hl,0
+	push hl
+	ld hl,0
+	ld a,(0ac900h+21)
+	ld l,a
+	ld a,(0ac900h+24)
+	ld h,a
+	push hl
+	ld hl,(fp4cpmcompat)
+	push hl
+	call _fseek
+	pop bc
+	pop bc
+	pop bc
+
+	ld hl,(fp4cpmcompat)
+	push hl
+	ld hl,1
+	push hl
+	ld hl,128
+	push hl
+	ld hl,0ff0000h
+	ld a,(0ac900h+18)
+	ld l,a
+	ld a,(0ac900h+19)
+	ld h,a
+	push hl
+	call _fread
+	pop bc
+	pop bc
+	pop bc
+	pop bc
+
+	ld hl,(fp4cpmcompat)
+	push hl
+	call _fclose
+	pop bc
+	ld a,0h
+	ld.lil (compatstack+12),a
+	jp retsequence2
+
+disk_compaterr:
 	ld a,0ffh
+	ld.lil (compatstack+12),a
 	jp retsequence2
 
 diskwrite_compat:
@@ -145,8 +224,70 @@ diskwrite_compat:
 	ld.lil (compatstack+6),hl
 	ld.lil (compatstack+9),sp
 	ld.lil (compatstack+12),a
-	ld a,0ffh
+	ld sp,spsp4mp
+
+	ld hl,wmode4cpmcompat
+	push hl
+	ld hl,fname4cpmcompat
+	push hl
+	call _fopen
+	ld (fp4cpmcompat),hl
+	pop bc
+	pop bc
+	ld a,l
+	or a,h
+	jp z,disk_compaterr
+
+	ld hl,0
+	push hl
+	ld hl,0
+	ld a,(0ac900h+21)
+	ld l,a
+	ld a,(0ac900h+24)
+	ld h,a
+	push hl
+	ld hl,(fp4cpmcompat)
+	push hl
+	call _fseek
+	pop bc
+	pop bc
+	pop bc
+
+	ld hl,(fp4cpmcompat)
+	push hl
+	ld hl,1
+	push hl
+	ld hl,128
+	push hl
+	ld hl,0ff0000h
+	ld a,(0ac900h+18)
+	ld l,a
+	ld a,(0ac900h+19)
+	ld h,a
+	push hl
+	call _fwrite
+	pop bc
+	pop bc
+	pop bc
+	pop bc
+
+	ld hl,(fp4cpmcompat)
+	push hl
+	call _fclose
+	pop bc
+	ld a,0h
+	ld.lil (compatstack+12),a
 	jp retsequence2
+
+fp4cpmcompat:
+.dl 0
+rmode4cpmcompat:
+.db "rb",0
+wmode4cpmcompat:
+.db "ab",0
+
+fname4cpmcompat:
+.db "cpm.bin",0
 
 diskerrchk_compat:
 	di
@@ -155,6 +296,7 @@ diskerrchk_compat:
 	ld.lil (compatstack+6),hl
 	ld.lil (compatstack+9),sp
 	ld.lil (compatstack+12),a
+	ld sp,spsp4mp
 	ld a,0ffh
 	jp retsequence2
 
