@@ -3,6 +3,8 @@
 	di
 	stmix
 	call.il init
+.fill 66h-$
+	jp.lil preemptive
 .fill 256-$
 	jp.lil putch
 	jp.lil getch
