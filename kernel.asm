@@ -63,6 +63,9 @@
 	jp.lil set_prc_consid
 
 	jp.lil get_fsstk_ptr
+
+	jp.lil setmsghandler
+	jp.lil sendmsg
 init:
 .assume ADL=1
 	stmix
@@ -733,6 +736,27 @@ ter_prc_lplp1bpx:
 
 backupstk4hl:
 .dl 0,0,0
+
+setmsghandler:
+	ld (backupstk+40),hl
+	ret
+
+sendmsg:
+	di
+	ld l,45
+	ld h,a
+	mlt hl
+	ld.lil (compatstack+3),de
+	ld de,backupstk4p+40
+	add hl,de
+	ld.lil de,(compatstack+3)
+	call sendmsghdl
+	ei
+	ret
+
+sendmsghdl:
+	jp (hl)
+	
 
 preemptive:
 	di
