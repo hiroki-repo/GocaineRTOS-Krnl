@@ -73,7 +73,7 @@ init:
 	ld sp,spsp4mp
 	ei
 	;ld hl,z80prctest
-	;call add_prc
+	;call.il add_prc
 	;ld hl,lplp2
 	;call add_prc
 	jp.lil 010000h
@@ -90,10 +90,10 @@ get_prc_consid:
 	ret
 
 retsequence1:
-	pop hl
-	push hl
-	bit 0,l
-	jr nz,retsequence1_1
+	;pop hl
+	;push hl
+	;bit 0,l
+	;jr nz,retsequence1_1
 	ld.lil (compatstack+0),bc
 	ld.lil (compatstack+3),de
 	ld.lil (compatstack+6),hl
@@ -127,13 +127,13 @@ retsequence2_1:
 	ld.lil sp,(compatstack+9)
 	ld.lil a,(compatstack+12)
 	ei
-	ret.l
+	ret
 
 retsequence2p16:
 	;ld.lil sp,(compatstack+16+9)
-	pop hl
-	push hl
-	bit 0,l
+	;pop hl
+	;push hl
+	;bit 0,l
 	;jr nz,retsequence2p16_1
 	ld.lil bc,(compatstack+16+0)
 	ld.lil de,(compatstack+16+3)
@@ -674,10 +674,13 @@ backupstk4hl:
 
 preemptive:
 	di
+	;out0 (4),a
 	jp.il preemptive_lr
 preemptive_aft:
-	bit 1,a
-	jr z,preemptive_aft_16bit
+	;out0 (4),a
+	;bit 0,a
+	;cp a,1h
+	;jr z,preemptive_aft_16bit
 	ld sp,backupstk+33
 	pop af
 	ld sp,(backupstk+24)
@@ -760,6 +763,9 @@ preemptive_lplp2bp:
 	exx
 	ld a,(backupstk+37)
 	ld mb,a
+	;for debug
+	;ld a,(pid)
+	;out0 (4),a
 	ld a,(backupstk+27)
 	jp preemptive_aft
 backupstk:
