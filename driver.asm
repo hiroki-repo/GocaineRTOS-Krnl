@@ -6,6 +6,8 @@
 	jp.lil fsdrv
 
 fsdrv:
+	ld (spbak),sp
+	ld sp,spspstk
 	call 0100h+(5*43)
 	ld (hlstk),hl
 	ld de,fsstk
@@ -24,8 +26,15 @@ fsdrv:
 	in0 a,(4)
 	ld (hlstk+2),a
 	ld hl,(hlstk)
+	ld sp,(spbak)
 	ret
 
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+spspstk:
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+
+spbak:
+.dl 0
 hlstk:
 .dl 0
 fsstk:

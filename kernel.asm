@@ -140,7 +140,7 @@ retsequence2p16:
 	ld.lil hl,(compatstack+16+6)
 	ld.lil sp,(compatstack+16+9)
 	ld.lil a,(compatstack+16+12)
-	ei
+	;ei
 	ret
 retsequence2p16_1:
 	ld.lil bc,(compatstack+16+0)
@@ -153,6 +153,14 @@ retsequence2p16_1:
 
 
 putch:
+	ld (backupstk+39),a
+putch_spwait:
+	ld a,(compatstack_semaphore)
+	bit 1,a
+	jr nz,putch_spwait
+	set 1,a
+	ld (compatstack_semaphore),a
+	ld a,(backupstk+39)
 	di
 	ld.lil (compatstack+0),bc
 	ld.lil (compatstack+3),de
@@ -162,10 +170,20 @@ putch:
 	ld sp,spsp4mp
 	;out0 (4),a
 	call bios_putch
+	ld a,(compatstack_semaphore)
+	res 1,a
+	ld (compatstack_semaphore),a
 	jp retsequence2
 
 getch:
-	di
+	ld (backupstk+39),a
+getch_spwait:
+	ld a,(compatstack_semaphore)
+	bit 1,a
+	jr nz,getch_spwait
+	set 1,a
+	ld (compatstack_semaphore),a
+	ld a,(backupstk+39)
 	ld.lil (compatstack+0),bc
 	ld.lil (compatstack+3),de
 	ld.lil (compatstack+6),hl
@@ -174,8 +192,20 @@ getch:
 	ld sp,spsp4mp
 	call bios_getch
 	ld.lil (compatstack+12),a
+	ld a,(compatstack_semaphore)
+	res 1,a
+	ld (compatstack_semaphore),a
 	jp retsequence2
 kbhit:
+	ld (backupstk+39),a
+kbhit_spwait:
+	ld a,(compatstack_semaphore)
+	bit 1,a
+	jr nz,kbhit_spwait
+	di
+	set 1,a
+	ld (compatstack_semaphore),a
+	ld a,(backupstk+39)
 	di
 	ld.lil (compatstack+0),bc
 	ld.lil (compatstack+3),de
@@ -185,6 +215,9 @@ kbhit:
 	ld sp,spsp4mp
 	call bios_kbhit
 	ld.lil (compatstack+12),a
+	ld a,(compatstack_semaphore)
+	res 1,a
+	ld (compatstack_semaphore),a
 	jp retsequence2
 
 get_fsstk_ptr:
@@ -195,7 +228,7 @@ fsstk:
 .dl 0,0,0,0,0,0,0,0
 
 _fopen:
-	di
+	;di
 	ld.lil (compatstack+16+0),bc
 	ld.lil (compatstack+16+3),de
 	ld.lil (compatstack+16+6),hl
@@ -215,7 +248,7 @@ _fopen:
 	ret
 
 _fseek:
-	di
+	;di
 	ld.lil (compatstack+16+0),bc
 	ld.lil (compatstack+16+3),de
 	ld.lil (compatstack+16+6),hl
@@ -237,7 +270,7 @@ _fseek:
 	ret
 
 _fread:
-	di
+	;di
 	ld.lil (compatstack+16+0),bc
 	ld.lil (compatstack+16+3),de
 	ld.lil (compatstack+16+6),hl
@@ -261,7 +294,7 @@ _fread:
 	ret
 
 _fwrite:
-	di
+	;di
 	ld.lil (compatstack+16+0),bc
 	ld.lil (compatstack+16+3),de
 	ld.lil (compatstack+16+6),hl
@@ -285,7 +318,7 @@ _fwrite:
 	ret
 
 _fclose:
-	di
+	;di
 	ld.lil (compatstack+16+0),bc
 	ld.lil (compatstack+16+3),de
 	ld.lil (compatstack+16+6),hl
@@ -303,6 +336,14 @@ _fclose:
 	ret
 
 diskread_compat:
+	ld (backupstk+39),a
+diskread_compat_spwait:
+	ld a,(compatstack_semaphore)
+	bit 1,a
+	jr nz,diskread_compat_spwait
+	set 1,a
+	ld (compatstack_semaphore),a
+	ld a,(backupstk+39)
 	di
 	ld.lil (compatstack+0),bc
 	ld.lil (compatstack+3),de
@@ -316,7 +357,7 @@ diskread_compat:
 	ld hl,fname4cpmcompat
 	push hl
 	call _fopen
-	di
+	;di
 	ld (fp4cpmcompat),hl
 	pop bc
 	pop bc
@@ -353,7 +394,7 @@ diskread_compat:
 	ld hl,(fp4cpmcompat)
 	push hl
 	call _fseek
-	di
+	;di
 	pop bc
 	pop bc
 	pop bc
@@ -371,7 +412,7 @@ diskread_compat:
 	ld h,a
 	push hl
 	call _fread
-	di
+	;di
 	pop bc
 	pop bc
 	pop bc
@@ -380,10 +421,13 @@ diskread_compat:
 	ld hl,(fp4cpmcompat)
 	push hl
 	call _fclose
-	di
+	;di
 	pop bc
 	ld a,0h
 	ld.lil (compatstack+12),a
+	ld a,(compatstack_semaphore)
+	res 1,a
+	ld (compatstack_semaphore),a
 	jp retsequence2
 
 disk_compat_cf80:
@@ -393,9 +437,20 @@ disk_compat_cf80:
 disk_compaterr:
 	ld a,0ffh
 	ld.lil (compatstack+12),a
+	ld a,(compatstack_semaphore)
+	res 1,a
+	ld (compatstack_semaphore),a
 	jp retsequence2
 
 diskwrite_compat:
+	ld (backupstk+39),a
+diskwrite_compat_spwait:
+	ld a,(compatstack_semaphore)
+	bit 1,a
+	jr nz,diskwrite_compat_spwait
+	set 1,a
+	ld (compatstack_semaphore),a
+	ld a,(backupstk+39)
 	di
 	ld.lil (compatstack+0),bc
 	ld.lil (compatstack+3),de
@@ -409,7 +464,7 @@ diskwrite_compat:
 	ld hl,fname4cpmcompat
 	push hl
 	call _fopen
-	di
+	;di
 	ld (fp4cpmcompat),hl
 	pop bc
 	pop bc
@@ -446,7 +501,7 @@ diskwrite_compat:
 	ld hl,(fp4cpmcompat)
 	push hl
 	call _fseek
-	di
+	;di
 	pop bc
 	pop bc
 	pop bc
@@ -464,7 +519,7 @@ diskwrite_compat:
 	ld h,a
 	push hl
 	call _fwrite
-	di
+	;di
 	pop bc
 	pop bc
 	pop bc
@@ -473,10 +528,13 @@ diskwrite_compat:
 	ld hl,(fp4cpmcompat)
 	push hl
 	call _fclose
-	di
+	;di
 	pop bc
 	ld a,0h
 	ld.lil (compatstack+12),a
+	ld a,(compatstack_semaphore)
+	res 1,a
+	ld (compatstack_semaphore),a
 	jp retsequence2
 
 hlbitedittmp:
@@ -547,7 +605,9 @@ sistran_compat:
 	jp retsequence2
 
 compatstack:
-.fill 256
+.fill 255
+compatstack_semaphore:
+.db 0
 
 z80prctest:
 	ld sp,02FF00h
