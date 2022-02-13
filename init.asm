@@ -1,6 +1,9 @@
 .org 010000h
 .assume ADL=1
+#include "stdcall.inc"
 	ld sp,01ff00h
+	svc (32)
+	out0 (4),a
 	ld a,255
 	ld (0ac603h),a
 	ld a,255
@@ -29,12 +32,12 @@ clrset3:
 
 
 	ld hl,cpmprc
-	call.il 0100h+(5*31)
+	svc (31)
 	;jp lplp
 	ld hl,testprc
-	call.il 0100h+(5*31)
+	svc (31)
 	ld sp,01ff00h
-	call 0100h+(5*32)
+	svc (32)
 	;out0 (4),a
 	ld hl,0a0000h
 	ld c,2
@@ -59,9 +62,9 @@ lplp:
 
 testprc:
 	ld sp,01ef00h
-	;call 0100h+(5*32)
+	;svc (32)
 	;out0 (0),a
-	;call 0100h+(5*33)
+	;svc (33)
 	ld a,255
 	ld (0ac603h),a
 	ld a,255
@@ -87,7 +90,7 @@ lplpx:
 	ld c,a
 	jp lplpx
 lplp2:
-	;call 0100h+(5*32)
+	;svc (32)
 	;out0 (0),a
 	jp lplp2
 

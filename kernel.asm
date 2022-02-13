@@ -186,6 +186,15 @@ init_fce_syscall_func_b_main:
 	add ix,bc
 	ld bc,0100h
 	add ix,bc
+	ld a,(init_fce_syscall_funcno+1)
+	ld c,a
+	ld a,(init_fce_syscall_funcno+2)
+	ld b,a
+	ld a,(init_fce_syscall_funcno)
+	or a,b
+	or a,c
+	cp a,32
+	jp c,init_fce_syscall_ilsvc
 
 	ld.lil bc,(compatstack+64+0)
 	ld.lil de,(compatstack+64+3)
@@ -194,6 +203,25 @@ init_fce_syscall_func_b_main:
 	ld.lil a,(compatstack+64+12)
 
 	call syscall_jpixix
+
+	ld.lil ix,(compatstack+64+18)
+
+	ld.lil (compatstack+64+0),bc
+	ld.lil (compatstack+64+3),de
+	ld.lil (compatstack+64+6),hl
+	ld.lil (compatstack+64+12),a
+
+	ld.lil sp,(compatstack+64+15)
+	jp init_retfce2
+
+init_fce_syscall_ilsvc:
+	ld.lil bc,(compatstack+64+0)
+	ld.lil de,(compatstack+64+3)
+	ld.lil hl,(compatstack+64+6)
+	ld.lil sp,(compatstack+64+9)
+	ld.lil a,(compatstack+64+12)
+
+	call.il syscall_jpixix
 
 	ld.lil ix,(compatstack+64+18)
 
