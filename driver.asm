@@ -1,4 +1,4 @@
-.org 3c00h
+.org 3f00h
 .assume ADL=1
 	jp.lil putch
 	jp.lil getch

@@ -2,7 +2,7 @@
 .assume ADL=0
 	di
 	stmix
-	call.il init
+	jp.lil init
 .fill 66h-$
 	jp.lil preemptive
 .fill 256-$
@@ -66,9 +66,64 @@
 
 	jp.lil setmsghandler
 	jp.lil sendmsg
+
+	jp.lil getintvecptr
 init:
 .assume ADL=1
+	di
 	stmix
+	ld.lil (compatstack+64+0),bc
+	ld.lil (compatstack+64+3),de
+	ld.lil (compatstack+64+6),hl
+	ld.lil (compatstack+64+9),sp
+	ld.lil (compatstack+64+12),a
+	ld a,(fcestack4em+9)
+	and a
+	jp z,init_main
+	inc sp
+	pop hl
+	push hl
+	ld hl,0
+	add hl,sp
+	dec sp
+	;ld hl,(hl)
+	;ld (fcestack4em+3),hl
+	ld hl,(hl)
+	ld (fcestack4em+6),hl
+	;out0 (4),l
+	;out0 (4),h
+	push af
+	ld b,7
+init_fcebegin:
+	ld hl,(hl)
+	ld (fcestack4em),hl
+	;out0 (4),l
+	;out0 (4),h
+	ld a,l
+	;out0 (4),a
+	cp a,0cbh
+	jp z,init_fce_sll
+	cp a,040h
+	jp z,init_fcebegin_x
+	cp a,049h
+	jp z,init_fcebegin_x
+	cp a,052h
+	jp z,init_fcebegin_x
+	cp a,05bh
+	jp z,init_fcebegin_x
+	;cp a,071h
+	;jp z,init_fcebegin_y
+	cp a,0edh
+	jp z,init_fce_syscall
+	ld a,h
+	cp a,0cbh
+	jp z,init_fce_ixiy_sll
+	dec b
+	jp nz,init_fcebegin_y
+	jp lplp
+init_main:
+	ld a,1
+	ld (fcestack4em+9),a
 	im 2
 	ld hl,vector >> 8 & 0ffffh
 	ld i,hl
@@ -85,6 +140,311 @@ init:
 lplp:
 	jp lplp
 	halt
+fcestack4em:
+.dl 0,0,0,0
+
+init_fce_syscall:
+	ld a,h
+	cp a,071h
+	jp z,init_fce_syscall_func
+	jp init_retfce2
+
+init_fce_syscall_func:
+	ld.lil (compatstack+64+15),sp
+	ld.lil hl,(compatstack+64+9)
+	ld a,(hl)
+	bit 0,a
+	;jp z,init_fce_syscall_func_b_seq
+	inc hl
+	ld hl,(hl)
+	inc hl
+	ld bc,(hl)
+	ld.lil (init_fce_syscall_funcno),bc
+	ld.lil hl,(compatstack+64+9)
+	inc hl
+	ld bc,(hl)
+	inc bc
+	inc bc
+	inc bc
+init_fce_syscall_func_b_main:
+	ld a,(init_fce_syscall_funcno)
+	;out0 (4),a
+	ld (hl),bc
+	ld.lil sp,(compatstack+64+15)
+	
+	ld.lil (compatstack+64+15),sp
+
+	ld.lil sp,(compatstack+64+9)
+
+
+	ld.lil (compatstack+64+18),ix
+	ld bc,(init_fce_syscall_funcno)
+	add ix,bc
+	add ix,bc
+	add ix,bc
+	add ix,bc
+	add ix,bc
+	ld bc,0100h
+	add ix,bc
+
+	ld.lil bc,(compatstack+64+0)
+	ld.lil de,(compatstack+64+3)
+	ld.lil hl,(compatstack+64+6)
+	ld.lil sp,(compatstack+64+9)
+	ld.lil a,(compatstack+64+12)
+
+	call syscall_jpixix
+
+	ld.lil ix,(compatstack+64+18)
+
+	ld.lil (compatstack+64+0),bc
+	ld.lil (compatstack+64+3),de
+	ld.lil (compatstack+64+6),hl
+	ld.lil (compatstack+64+12),a
+
+	ld.lil sp,(compatstack+64+15)
+	jp init_retfce2
+
+syscall_jpixix:
+	jp (ix)
+
+init_fce_syscall_func_b_seq:
+	inc hl
+	ld hl,(hl)
+	inc hl
+	ld bc,(hl)
+	ld.lil (init_fce_syscall_funcno),bc
+	ld.lil hl,(compatstack+64+9)
+	inc hl
+	ld bc,(hl)
+	inc bc
+	inc bc
+	jp init_fce_syscall_func_b_main
+
+init_fce_syscall_funcno:
+.dl 0
+
+init_fcebegin_x:
+	ld.lil (compatstack+64+15),sp
+	inc hl
+	ld bc,(hl)
+	inc bc
+	ld (hl),bc
+	ld.lil sp,(compatstack+64+15)
+	pop af
+	inc sp
+	pop hl
+	push hl
+	dec sp
+	push af
+	inc hl
+	jp init_fcebegin
+
+init_fcebegin_y:
+	ld.lil (compatstack+64+15),sp
+	inc hl
+	ld bc,(hl)
+	dec bc
+	ld (hl),bc
+	ld.lil sp,(compatstack+64+15)
+	pop af
+	inc sp
+	pop hl
+	push hl
+	dec sp
+	push af
+	dec hl
+	jp init_fcebegin
+
+init_retfce:
+	ld.lil (compatstack+64+15),sp
+	ld.lil hl,(compatstack+64+9)
+	inc hl
+	ld bc,(hl)
+	inc bc
+	inc bc
+	;inc bc
+	ld (hl),bc
+	ld.lil sp,(compatstack+64+15)
+	pop af
+	ld.lil bc,(compatstack+64+0)
+	ld.lil de,(compatstack+64+3)
+	ld.lil hl,(compatstack+64+6)
+	ld.lil sp,(compatstack+64+9)
+	ld.lil a,(compatstack+64+12)
+	ei
+	ret.l
+
+init_retfce2:
+	ld.lil (compatstack+64+15),sp
+	ld.lil hl,(compatstack+64+9)
+	inc hl
+	ld bc,(hl)
+	inc bc
+	;inc bc
+	ld (hl),bc
+	ld.lil sp,(compatstack+64+15)
+	pop af
+	ld.lil bc,(compatstack+64+0)
+	ld.lil de,(compatstack+64+3)
+	ld.lil hl,(compatstack+64+6)
+	ld.lil sp,(compatstack+64+9)
+	ld.lil a,(compatstack+64+12)
+	ei
+	ret.l
+
+init_retfce3:
+	ld.lil (compatstack+64+15),sp
+	ld.lil hl,(compatstack+64+9)
+	inc hl
+	ld bc,(hl)
+	inc bc
+	inc bc
+	inc bc
+	;inc bc
+	ld (hl),bc
+	ld.lil sp,(compatstack+64+15)
+	pop af
+	ld.lil bc,(compatstack+64+0)
+	ld.lil de,(compatstack+64+3)
+	ld.lil hl,(compatstack+64+6)
+	ld.lil sp,(compatstack+64+9)
+	ld.lil a,(compatstack+64+12)
+	ei
+	ret.l
+
+init_fce_ixiy_sll:
+	ld a,l
+	cp a,0ddh
+	jp z,init_fce_ix_sll
+	cp a,0fdh
+	jp z,init_fce_iy_sll
+	jp init_retfce3
+
+init_fce_ix_sll:
+	ld a,(fcestack4em+2)
+	ld (init_fce_ix_slled0+2),a
+	ld (init_fce_ix_slled1+2),a
+init_fce_ix_slled0:
+	pop af
+	ld a,(ix+0)
+	scf
+	rla
+init_fce_ix_slled1:
+	ld (ix+0),a
+	push af
+	jp init_retfce3
+
+init_fce_iy_sll:
+	ld a,(fcestack4em+2)
+	ld (init_fce_iy_slled0+2),a
+	ld (init_fce_iy_slled1+2),a
+init_fce_iy_slled0:
+	pop af
+	ld a,(iy+0)
+	scf
+	rla
+init_fce_iy_slled1:
+	ld (iy+0),a
+	push af
+	jp init_retfce3
+
+
+init_fce_sll:
+	ld a,h
+	out0 (4),a
+	sub a,030h
+	cp a,0
+	jp z,init_fce_sll_b
+	cp a,1
+	jp z,init_fce_sll_c
+	cp a,2
+	jp z,init_fce_sll_d
+	cp a,3
+	jp z,init_fce_sll_e
+	cp a,4
+	jp z,init_fce_sll_h
+	cp a,5
+	jp z,init_fce_sll_l
+	cp a,6
+	jp z,init_fce_sll_hl
+	cp a,7
+	jp z,init_fce_sll_a
+	jp init_retfce2
+
+init_fce_sll_b:
+	pop af
+	ld a,(compatstack+64+0+1)
+	scf
+	rla
+	ld (compatstack+64+0+1),a
+	push af
+	jp init_retfce2
+init_fce_sll_c:
+	pop af
+	ld a,(compatstack+64+0+0)
+	scf
+	rla
+	ld (compatstack+64+0+0),a
+	push af
+	jp init_retfce2
+
+init_fce_sll_d:
+	pop af
+	ld a,(compatstack+64+3+1)
+	scf
+	rla
+	ld (compatstack+64+3+1),a
+	push af
+	jp init_retfce2
+init_fce_sll_e:
+	pop af
+	ld a,(compatstack+64+3+0)
+	scf
+	rla
+	ld (compatstack+64+3+0),a
+	push af
+	jp init_retfce2
+
+init_fce_sll_h:
+	pop af
+	ld a,(compatstack+64+6+1)
+	scf
+	rla
+	ld (compatstack+64+6+1),a
+	push af
+	jp init_retfce2
+init_fce_sll_l:
+	pop af
+	ld a,(compatstack+64+6+0)
+	scf
+	rla
+	ld (compatstack+64+6+0),a
+	push af
+	jp init_retfce2
+
+init_fce_sll_hl:
+	ld hl,(compatstack+64+6+0)
+	pop af
+	ld a,(hl)
+	scf
+	rla
+	ld (hl),a
+	ld (compatstack+64+6+0),hl
+	push af
+	jp init_retfce2
+init_fce_sll_a:
+	pop af
+	ld a,(compatstack+64+12+0)
+	scf
+	rla
+	ld (compatstack+64+12+0),a
+	push af
+	jp init_retfce2
+
+getintvecptr:
+	ld hl,vector
+	ret
 
 set_prc_consid:
 	ld (backupstk+38),a
