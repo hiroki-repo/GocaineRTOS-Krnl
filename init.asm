@@ -3,7 +3,7 @@
 #include "stdcall.inc"
 	ld sp,01ff00h
 	svc (32)
-	out0 (4),a
+	;out0 (4),a
 	ld a,255
 	ld (0ac603h),a
 	ld a,255
