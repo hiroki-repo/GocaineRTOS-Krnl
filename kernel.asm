@@ -145,6 +145,7 @@ init_main:
 	call.il add_prc
 	ld sp,spsp4taskstk
 	ld (spsp4taskstksto),sp
+	ld sp,spsp4taskstk2
 lplp:
 	ld a,(spsp4taskstksto+3)
 	and a
@@ -154,7 +155,11 @@ lplp:
 	halt
 
 add_prc_caller:
+	ld (spsp4taskstksto+9),sp
+	ld sp,(spsp4taskstksto)
 	pop hl
+	ld (spsp4taskstksto),sp
+	ld sp,(spsp4taskstksto+9)
 	call.il add_prc
 	ld a,(spsp4taskstksto+3)
 	dec a
@@ -235,6 +240,7 @@ init_fce_syscall_func_b_main:
 	cp a,32
 	jp c,init_fce_syscall_ilsvc
 
+	;pop af
 	ld.lil bc,(compatstack+64+0)
 	ld.lil de,(compatstack+64+3)
 	ld.lil hl,(compatstack+64+6)
@@ -251,9 +257,12 @@ init_fce_syscall_func_b_main:
 	ld.lil (compatstack+64+12),a
 
 	ld.lil sp,(compatstack+64+15)
+	;pop bc
+	;push af
 	jp init_retfce2
 
 init_fce_syscall_ilsvc:
+	pop af
 	ld.lil bc,(compatstack+64+0)
 	ld.lil de,(compatstack+64+3)
 	ld.lil hl,(compatstack+64+6)
@@ -270,6 +279,8 @@ init_fce_syscall_ilsvc:
 	ld.lil (compatstack+64+12),a
 
 	ld.lil sp,(compatstack+64+15)
+	;pop bc
+	;push af
 	jp init_retfce2
 
 syscall_jpixix:
@@ -1754,9 +1765,12 @@ spsp4mp:
 .dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 spsp4taskstk:
 .dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+spsp4taskstk2:
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 
 spsp4taskstksto:
-.dl 0,0,0
+.dl 0,0,0,0
 
 .fill 256-($%256)
 

@@ -5,7 +5,7 @@
 #define getch call.il 0100h+(5*1)
 #define kbhit call.il 0100h+(5*2)
 
-#define add_prc(xxxx) ld hl,xxxx \ call 0100h+(5*31)
+#define add_prc(xxxx) ld hl,xxxx \ call.il 0100h+(5*31)
 #define get_prc_id call 0100h+(5*32)
 #define ter_prc call 0100h+(5*33)
 #define ter_prc_other(xxxx) ld a,xxxx \ call 0100h+(5*34)
