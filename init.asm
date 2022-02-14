@@ -12,8 +12,11 @@
 	ld a,255
 	ld (0ac60bh),a
 
+	ld (0ac60ch),a
+	ld (0ac60dh),a
+	ld (0ac60eh),a
 
-	ld a,1
+	ld a,4
 ;1times
 	ld hl,0ac400h
 	ld b,255
@@ -30,25 +33,15 @@ clrset3:
 	inc hl
 	djnz clrset3
 	ld (hl),a
+	ld a,1
 
 	;ld a,'@'
 	;svc (0)
 
 	ld hl,cpmprc
-	ld a,(prcsp0)
-	set 0,a
-	ld (prcsp0),a
-	call.il 0100h+(5*31)
-	;svc (31)
-	;call 0100h+(5*31)
-	;rst 10h
-	ld a,(prcsp0)
-	res 0,a
-	ld (prcsp0),a
-	;add_prc(cpmprc)
+	svc (31)
 	ld hl,testprc
-	call.il 0100h+(5*31)
-	;svc (31)
+	svc (31)
 	ld sp,01ff00h
 	svc (32)
 	;out0 (4),a
@@ -67,6 +60,7 @@ lplpx2:
 	ld hl,0a0000h
 	ld a,r
 	and a,3
+	;inc a
 	ld c,a
 	jp lplpx2
 lplp:
@@ -78,7 +72,8 @@ prcsp0:
 
 testprc:
 	ld sp,01ef00h
-	;svc (32)
+	rst 8
+	;out0 (4),a
 	;out0 (0),a
 	;svc (33)
 	ld a,255
@@ -113,11 +108,7 @@ lplp2:
 cpmprc:
 	ld sp,01df00h
 	;call.il 0100h+(5*0)
-	rst 8
-prcsp0_chk00:
-	;ld a,(prcsp0)
-	;bit 0,a
-	;jr nz,prcsp0_chk00
+	;rst 8
 	ld a,'A'
 	;call 0100h+(5*0)
 	;svc (32)
@@ -125,7 +116,8 @@ prcsp0_chk00:
 	;ld a,'A'
 	;svc (0)
 	;svc (32)
-	svc (0)
+	;svc (0)
+	;call 0100h+(5*32)
 	;out0 (4),a
 	ld a,255
 	ld.lil (0ac603h),a
