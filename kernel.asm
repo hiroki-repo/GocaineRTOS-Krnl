@@ -3,6 +3,10 @@
 	di
 	stmix
 	jp.lil init
+.fill 8h-$
+	jp.lil svcfromrst
+.fill 10h-$
+	jp.lil addprcfromrst
 .fill 66h-$
 	jp.lil preemptive
 .fill 256-$
@@ -46,7 +50,7 @@
 	jp.lil invaliddev_in
 	jp.lil invaliddev_st
 
-	jp.lil add_prc
+	jp.lil add_prc_ind
 	jp.lil get_prc_id
 	jp.lil ter_prc
 	jp.lil ter_prc_other
@@ -136,12 +140,47 @@ init_main:
 	;call.il add_prc
 	;ld hl,lplp2
 	;call add_prc
-	jp.lil 010000h
+	;jp.lil 010000h
+	ld hl,010000h
+	call.il add_prc
+	ld sp,spsp4taskstk
+	ld (spsp4taskstksto),sp
 lplp:
+	ld a,(spsp4taskstksto+3)
+	and a
+	jr nz,add_prc_caller
+
 	jp lplp
 	halt
+
+add_prc_caller:
+	pop hl
+	call.il add_prc
+	ld a,(spsp4taskstksto+3)
+	dec a
+	ld (spsp4taskstksto+3),a
+	jr lplp
+
+add_prc_ind:
+	ld (spsp4taskstksto+6),sp
+	ld sp,(spsp4taskstksto)
+	push hl
+	ld (spsp4taskstksto),sp
+	ld a,(spsp4taskstksto+3)
+	inc a
+	ld (spsp4taskstksto+3),a
+	ld sp,(spsp4taskstksto+6)
+	ret.l
+
 fcestack4em:
 .dl 0,0,0,0
+
+svcfromrst:
+	call.il preemptive_0
+	ret
+addprcfromrst:
+	call.il add_prc
+	ret
 
 init_fce_syscall:
 	ld a,h
@@ -1097,6 +1136,7 @@ add_prc_lplp3bp:
 	ld bc,45
 	ldir
 	ld hl,(backupstk4hl)
+	;call.il preemptive4newproc
 	ei
 	jp (hl)
 
@@ -1145,7 +1185,17 @@ sendmsg:
 sendmsghdl:
 	jp (hl)
 	
-
+preemptive4newproc:
+	di
+	ld sp,040000h
+	ld a,(pid)
+	ld d,a
+	ld e,128
+	mlt de
+	ex de,hl
+	add hl,sp
+	ld sp,hl
+	ex de,hl
 preemptive:
 	di
 	;out0 (4),a
@@ -1242,6 +1292,107 @@ preemptive_lplp2bp:
 	;out0 (4),a
 	ld a,(backupstk+27)
 	jp preemptive_aft
+
+
+preemptive_0:
+	di
+	;out0 (4),a
+	jp.il preemptive_0_lr
+preemptive_0_aft:
+	;out0 (4),a
+	;bit 0,a
+	;cp a,1h
+	;jr z,preemptive_0_aft_16bit
+	ld sp,backupstk+33
+	pop af
+	ld sp,(backupstk+24)
+	ei
+	reti.l
+preemptive_0_aft_16bit:
+	ld sp,backupstk+33
+	pop af
+	ld sp,(backupstk+24)
+	ei
+	reti
+preemptive_0_lr:
+	ld (backupstk+0),bc
+	ld (backupstk+3),de
+	ld (backupstk+6),hl
+	ld (backupstk+9),ix
+	ld (backupstk+12),iy
+	exx
+	ld (backupstk+15),bc
+	ld (backupstk+18),de
+	ld (backupstk+21),hl
+	exx
+	ld (backupstk+24),sp
+	pop hl
+	ld (backupstk+27),hl
+	pop hl
+	ld (backupstk+30),hl
+	ld sp,spsp
+	push af
+	pop hl
+	push hl
+	ld (backupstk+33),hl
+	ld a,mb
+	ld (backupstk+37),a
+	ld a,(pid)
+	ex de,hl
+	ld de,45
+	ld hl,backupstk4p
+	and a
+	jr z,preemptive_0_lplp1bp
+preemptive_0_lplp1:
+	add hl,de
+	dec a
+	jr nz,preemptive_0_lplp1
+preemptive_0_lplp1bp:
+	ex de,hl
+	ld hl,backupstk
+	ld bc,45
+	ldir
+	ld a,0
+	ld (pid),a
+	jr preemptive_0_lplpkk
+preemptive_0_lplpk:
+	ld a,(pid)
+	inc a
+	ld (pid),a
+preemptive_0_lplpkk:
+	ld de,45
+	ld hl,backupstk4p
+	and a
+	jr z,preemptive_0_lplp2bp
+preemptive_0_lplp2:
+	add hl,de
+	dec a
+	jr nz,preemptive_0_lplp2
+preemptive_0_lplp2bp:
+	ld de,backupstk
+	ld bc,45
+	ldir
+	ld a,(backupstk+36)
+	bit 0,a
+	jr z,preemptive_0_lplpk
+	ld sp,(backupstk+24)
+	ld bc,(backupstk+0)
+	ld de,(backupstk+3)
+	ld hl,(backupstk+6)
+	ld ix,(backupstk+9)
+	ld iy,(backupstk+12)
+	exx
+	ld bc,(backupstk+15)
+	ld de,(backupstk+18)
+	ld hl,(backupstk+21)
+	exx
+	ld a,(backupstk+37)
+	ld mb,a
+	;for debug
+	;ld a,(pid)
+	;out0 (4),a
+	ld a,(backupstk+27)
+	jp preemptive_0_aft
 backupstk:
 .dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 .fill 256-($%256)
@@ -1599,6 +1750,13 @@ pid:
 .dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 spsp4mp:
 .dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+spsp4taskstk:
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+
+spsp4taskstksto:
+.dl 0,0,0
 
 .fill 256-($%256)
 

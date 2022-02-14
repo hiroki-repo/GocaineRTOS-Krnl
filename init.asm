@@ -2,6 +2,7 @@
 .assume ADL=1
 #include "stdcall.inc"
 	ld sp,01ff00h
+	rst 8
 	svc (32)
 	;out0 (4),a
 	ld a,255
@@ -30,12 +31,24 @@ clrset3:
 	djnz clrset3
 	ld (hl),a
 
+	;ld a,'@'
+	;svc (0)
 
 	ld hl,cpmprc
-	svc (31)
-	;jp lplp
+	ld a,(prcsp0)
+	set 0,a
+	ld (prcsp0),a
+	call.il 0100h+(5*31)
+	;svc (31)
+	;call 0100h+(5*31)
+	;rst 10h
+	ld a,(prcsp0)
+	res 0,a
+	ld (prcsp0),a
+	;add_prc(cpmprc)
 	ld hl,testprc
-	svc (31)
+	call.il 0100h+(5*31)
+	;svc (31)
 	ld sp,01ff00h
 	svc (32)
 	;out0 (4),a
@@ -59,6 +72,9 @@ lplpx2:
 lplp:
 	;out0 (4),a
 	jp lplp
+
+prcsp0:
+.db 0
 
 testprc:
 	ld sp,01ef00h
@@ -96,6 +112,21 @@ lplp2:
 
 cpmprc:
 	ld sp,01df00h
+	;call.il 0100h+(5*0)
+	rst 8
+prcsp0_chk00:
+	;ld a,(prcsp0)
+	;bit 0,a
+	;jr nz,prcsp0_chk00
+	ld a,'A'
+	;call 0100h+(5*0)
+	;svc (32)
+	;call 0100h+(5*32)
+	;ld a,'A'
+	;svc (0)
+	;svc (32)
+	svc (0)
+	;out0 (4),a
 	ld a,255
 	ld.lil (0ac603h),a
 	ld a,255
@@ -108,6 +139,9 @@ cpmprc:
 	ld.lil (0ac900h+18),a
 	ld.lil (0ac900h+19),a
 	call.il 0100h+(5*3)
+	;out0 (4),a
+	;jp lplp
+	;svc(3)
 	ld a,0ffh
 	ld mb,a
 	ld sp,0ffff00h
