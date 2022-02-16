@@ -107,6 +107,8 @@ lplp2:
 
 cpmprc:
 	ld sp,01df00h
+	ld a,11
+	svc(42)
 	;call.il 0100h+(5*0)
 	;rst 8
 	ld a,'A'
