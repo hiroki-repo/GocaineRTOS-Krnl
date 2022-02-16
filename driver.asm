@@ -1,9 +1,14 @@
 .org 4200h
 .assume ADL=1
+.addinstr SVC (*)	 71ED 5 NOP 2 0
 	jp.lil putch
 	jp.lil getch
 	jp.lil kbhit
 	jp.lil fsdrv
+	jp.lil ttyprc_th
+vramstartptr:
+.fill 1000h
+
 
 fsdrv:
 	ld (spbak),sp
@@ -39,16 +44,41 @@ hlstk:
 .dl 0
 fsstk:
 .dl 0,0,0,0,0,0,0,0
+hl4baksk:
+.dl 0
 
 ;putch(a)
 putch:
-	ld.lil (0ac900h+0),bc
-	ld.lil (0ac900h+3),de
-	ld.lil (0ac900h+6),hl
-	ld.lil (0ac900h+9),sp
-	ld.lil (0ac900h+12),a
-	ld.lil bc,(0ac900h+15)
-	ld.lil hl,0AC000h
+	ld.lil (vramstartptr+0900h+0),bc
+	ld.lil (vramstartptr+0900h+3),de
+	ld.lil (vramstartptr+0900h+6),hl
+	ld.lil (vramstartptr+0900h+9),sp
+	ld.lil (vramstartptr+0900h+12),a
+	svc (41)
+	ld b,a
+	ld de,1000h
+	ld hl,vramstartptr4b
+	and a
+	jr z,putch_addhlde0000bp
+putch_addhlde0000:
+	add hl,de
+	djnz putch_addhlde0000
+putch_addhlde0000bp:
+	ld (hl4baksk),hl
+	ld de,0900h
+	add hl,de
+	ld bc,0fh
+	ld de,vramstartptr+0900h
+	ex de,hl
+	ldir
+	ex de,hl
+	ld hl,(hl4baksk)
+	ld bc,1000h
+	ld de,vramstartptr
+	ldir
+	ld.lil a,(vramstartptr+0900h+12)
+	ld.lil bc,(vramstartptr+0900h+15)
+	ld.lil hl,vramstartptr+0000h
 	cp 07h
 	jp.lil z,putch_bel
 	cp 08h
@@ -65,8 +95,8 @@ putchnormalret1:
 	cp 16
 	jp.lil nc,putch_retx2
 putchnormalret2:
-	ld.lil (0ac900h+15),bc
-	ld.lil hl,0AC000h
+	ld.lil (vramstartptr+0900h+15),bc
+	ld.lil hl,vramstartptr+0000h
 	ld a,b
 	and a
 	jr z,putch_1_bp
@@ -93,38 +123,45 @@ putch_1_bp:
 	ld a,h
 	adc a,0
 	ld h,a
-	ld.lil bc,(0ac900h+15)
-	ld.lil a,(0ac900h+12)
+	ld.lil bc,(vramstartptr+0900h+15)
+	ld.lil a,(vramstartptr+0900h+12)
 	ld.lil (hl),a
-	ld.lil bc,(0ac900h+15)
+	ld.lil bc,(vramstartptr+0900h+15)
 	inc c
 putchrox:
-	ld.lil (0ac900h+15),bc
-	ld.lil bc,(0ac900h+0)
-	ld.lil de,(0ac900h+3)
-	ld.lil hl,(0ac900h+6)
-	ld.lil sp,(0ac900h+9)
-	ld.lil a,(0ac900h+12)
+	ld.lil (vramstartptr+0900h+15),bc
+	ld hl,(hl4baksk)
+	ld bc,1000h
+	ld de,vramstartptr
+	ex de,hl
+	ldir
+	ex de,hl
+	;ld hl,vramstartptr
+	ld.lil bc,(vramstartptr+0900h+0)
+	ld.lil de,(vramstartptr+0900h+3)
+	ld.lil hl,(vramstartptr+0900h+6)
+	ld.lil sp,(vramstartptr+0900h+9)
+	ld.lil a,(vramstartptr+0900h+12)
 	ret
 putch_retx:
 	ld c,0
 	inc b
 	jp.lil putchnormalret1
 putch_retx2:
-	ld.lil (0ac900h+15),bc
-	ld.lil hl,0ac040h
-	ld.lil de,0ac000h
+	ld.lil (vramstartptr+0900h+15),bc
+	ld.lil hl,vramstartptr+0040h
+	ld.lil de,vramstartptr+0000h
 	ld.lil bc,960
 	ldir
 	ld b,32
-	ld hl,0ac3c0h
+	ld hl,vramstartptr+03c0h
 	ld a,00h
 putch_retx2_clr:
 	ld (hl),a
 	inc hl
 	inc hl
 	djnz putch_retx2_clr
-	ld.lil bc,(0ac900h+15)
+	ld.lil bc,(vramstartptr+0900h+15)
 	ld c,0
 	ld b,15
 	jp.lil putchnormalret2
@@ -150,20 +187,20 @@ putch_lf:
 	jp.lil nc,putch_lf_retx2
 	jp.lil putchrox
 putch_lf_retx2:
-	ld.lil (0ac900h+15),bc
-	ld.lil hl,0ac040h
-	ld.lil de,0ac000h
+	ld.lil (vramstartptr+0900h+15),bc
+	ld.lil hl,vramstartptr+0040h
+	ld.lil de,vramstartptr+0000h
 	ld.lil bc,960
 	ldir
 	ld b,32
-	ld hl,0ac3c0h
+	ld hl,vramstartptr+03c0h
 	ld a,00h
 putch_lf_retx2_clr:
 	ld (hl),a
 	inc hl
 	inc hl
 	djnz putch_lf_retx2_clr
-	ld.lil bc,(0ac900h+15)
+	ld.lil bc,(vramstartptr+0900h+15)
 	ld c,0
 	ld b,15
 	jp.lil putchrox
@@ -177,20 +214,30 @@ getch:
 	in0 a,(02h)
 	bit 1,a
 	jr z,getch
-	;ld.lil (0ac900h+0),bc
-	;ld.lil (0ac900h+3),de
-	;ld.lil (0ac900h+6),hl
-	;ld.lil (0ac900h+9),sp
-	;ld.lil (0ac900h+12),a
+	;ld.lil (vramstartptr+0900h+0),bc
+	;ld.lil (vramstartptr+0900h+3),de
+	;ld.lil (vramstartptr+0900h+6),hl
+	;ld.lil (vramstartptr+0900h+9),sp
+	;ld.lil (vramstartptr+0900h+12),a
 	in0 a,(03h)
-	;ld.lil bc,(0ac900h+0)
-	;ld.lil de,(0ac900h+3)
-	;ld.lil hl,(0ac900h+6)
-	;ld.lil sp,(0ac900h+9)
-	;ld.lil a,(0ac900h+12)
+	cp a,230
+	jr nc,getch_chtty
+	;ld.lil bc,(vramstartptr+0900h+0)
+	;ld.lil de,(vramstartptr+0900h+3)
+	;ld.lil hl,(vramstartptr+0900h+6)
+	;ld.lil sp,(vramstartptr+0900h+9)
+	;ld.lil a,(vramstartptr+0900h+12)
 	ret
+getch_chtty:
+	sub a,230
+	svc (48)
+	ld (curconsid),a
+	jr getch
+
 ;kbhit()
 kbhit:
+	ld b,a
+	;svc (41)
 	in0 a,(02h)
 	bit 1,a
 	jr z,kbhit0
@@ -199,3 +246,25 @@ kbhit:
 kbhit0:
 	ld a,00h
 	ret
+
+curconsid:
+.db 0
+
+ttyprc_th:
+	ld a,(curconsid)
+	ld b,a
+	ld de,1000h
+	ld hl,vramstartptr4b
+	and a
+	jr z,putch_addhlde0002bp
+putch_addhlde0002:
+	add hl,de
+	djnz putch_addhlde0002
+putch_addhlde0002bp:
+	ld bc,0400h
+	ld de,0ac000h
+	ldir
+	ret
+
+vramstartptr4b:
+.fill 1000h*256

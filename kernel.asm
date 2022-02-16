@@ -72,6 +72,9 @@
 	jp.lil sendmsg
 
 	jp.lil getintvecptr
+
+	jp.lil get_global_consid
+	jp.lil set_global_consid
 init:
 .assume ADL=1
 	di
@@ -147,6 +150,7 @@ init_main:
 	ld (spsp4taskstksto),sp
 	ld sp,spsp4taskstk2
 lplp:
+	call bios_ttyprc_th
 	ld a,(spsp4taskstksto+3)
 	and a
 	jr nz,add_prc_caller
@@ -667,6 +671,10 @@ get_fsstk_ptr:
 	ld hl,fsstk
 	ret
 
+kbint:
+	ei
+	ret.l
+
 fsstk:
 .dl 0,0,0,0,0,0,0,0
 
@@ -1180,6 +1188,13 @@ setmsghandler:
 	ld (backupstk+40),hl
 	ret
 
+get_global_consid:
+	ld a,(global_consid_db)
+	ret
+set_global_consid:
+	ld (global_consid_db),a
+	ret
+
 sendmsg:
 	di
 	ld l,45
@@ -1409,7 +1424,7 @@ backupstk:
 .fill 256-($%256)
 vector:
 .dl preemptive
-.dl 0
+.dl kbint
 .dl 0
 .dl 0
 .dl 0
@@ -1772,9 +1787,13 @@ spsp4taskstk2:
 spsp4taskstksto:
 .dl 0,0,0,0
 
+global_consid_db:
+.db 0
+
 .fill 256-($%256)
 
 bios_putch: .equ $+(5*0)
 bios_getch: .equ $+(5*1)
 bios_kbhit: .equ $+(5*2)
 bios_fsdrv: .equ $+(5*3)
+bios_ttyprc_th: .equ $+(5*4)
