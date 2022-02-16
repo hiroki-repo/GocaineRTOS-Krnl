@@ -58,18 +58,21 @@ spbak:
 hlstk:
 .dl 0
 fsstk:
-.dl 0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0
 hl4baksk:
-.dl 0
+.dl 0,0
 
 ;putch(a)
 putch:
+	;out0 (4),a
+	;ret
 	ld.lil (vramstartptr+0900h+0),bc
 	ld.lil (vramstartptr+0900h+3),de
 	ld.lil (vramstartptr+0900h+6),hl
-	ld.lil (vramstartptr+0900h+9),sp
+	;ld.lil (vramstartptr+0900h+9),sp
 	ld.lil (vramstartptr+0900h+12),a
-	svc (41)
+	;svc (41)
+	call 0100h+(5*41)
 	ld b,a
 	ld de,1000h
 	ld hl,vramstartptr4b
@@ -80,7 +83,7 @@ putch_addhlde0000:
 	djnz putch_addhlde0000
 putch_addhlde0000bp:
 	ld (hl4baksk),hl
-	ld de,0900h
+	ld de,900h
 	add hl,de
 	ld bc,0fh
 	ld de,vramstartptr+0900h
@@ -155,7 +158,7 @@ putchrox:
 	ld.lil bc,(vramstartptr+0900h+0)
 	ld.lil de,(vramstartptr+0900h+3)
 	ld.lil hl,(vramstartptr+0900h+6)
-	ld.lil sp,(vramstartptr+0900h+9)
+	;ld.lil sp,(vramstartptr+0900h+9)
 	ld.lil a,(vramstartptr+0900h+12)
 	ret
 putch_retx:
@@ -233,9 +236,11 @@ getch:
 	cp a,230
 	jr nc,getch_chtty
 	ld (getchbak),a
-	svc (41)
+	;svc (41)
+	call 0100h+(5*41)
 	ld b,a
-	svc (47)
+	;svc (47)
+	call 0100h+(5*47)
 	cp a,b
 	jr nz,getch
 	;ld.lil (vramstartptr+0900h+0),bc
@@ -252,14 +257,17 @@ getch:
 	ret
 getch_chtty:
 	sub a,230
-	svc (48)
+	;svc (48)
+	call 0100h+(5*48)
 	jr getch
 
 ;kbhit()
 kbhit:
-	svc (41)
+	;svc (41)
+	call 0100h+(5*41)
 	ld b,a
-	svc (47)
+	;svc (47)
+	call 0100h+(5*47)
 	cp a,b
 	jr nz,kbhit0
 	in0 a,(02h)
@@ -276,6 +284,7 @@ getchbak:
 
 ttyprc_th:
 	svc (47)
+	;call 0100h+(5*47)
 	ld b,a
 	ld de,1000h
 	ld hl,vramstartptr4b

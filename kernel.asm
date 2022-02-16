@@ -82,6 +82,8 @@ versionvl:.equ 0070h
 	jp.lil settck_compat;51
 
 	jp.lil get_version;52
+
+	jp.lil strprint;53
 init:
 .assume ADL=1
 	di
@@ -228,15 +230,15 @@ init_fce_syscall_func_b_main:
 	ld a,(init_fce_syscall_funcno)
 	;out0 (4),a
 	ld (hl),bc
-	ld.lil sp,(compatstack+64+15)
-	
-	ld.lil (compatstack+64+15),sp
+	;ld.lil sp,(compatstack+64+15)
+	;pop af
+	;ld.lil (compatstack+64+15),sp
 
 	ld.lil sp,(compatstack+64+9)
 
-
 	ld.lil (compatstack+64+18),ix
 	ld bc,(init_fce_syscall_funcno)
+	ld ix,0
 	add ix,bc
 	add ix,bc
 	add ix,bc
@@ -284,7 +286,7 @@ init_fce_syscall_svc:
 	jp init_retfce2
 
 init_fce_syscall_ilsvc:
-	pop af
+	;pop af
 	ld.lil bc,(compatstack+64+0)
 	ld.lil de,(compatstack+64+3)
 	ld.lil hl,(compatstack+64+6)
@@ -1156,6 +1158,17 @@ lplp2:
 
 get_prc_id:
 	ld a,(pid)
+	ret
+
+strprint:
+	di
+	ld a,(hl)
+	call.il putch
+	inc hl
+	ld a,(hl)
+	and a
+	jr nz,strprint
+	ei
 	ret
 
 add_prc:

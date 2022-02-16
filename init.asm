@@ -3,6 +3,9 @@
 #include "stdcall.inc"
 	ld sp,01ff00h
 	rst 8
+	;ld hl,outputmsg
+	;svc (53)
+	svc (52)
 	svc (32)
 	;out0 (4),a
 	ld a,255
@@ -38,6 +41,9 @@ clrset3:
 	;ld a,'@'
 	;svc (0)
 
+	ld a,'A'
+	svc (0)
+
 	ld hl,cpmprc
 	svc (31)
 	ld hl,testprc
@@ -47,6 +53,11 @@ clrset3:
 	;out0 (4),a
 	ld hl,0a0000h
 	ld c,2
+	ld a,33
+	;svc(0)
+	;svc (53)
+	;ld a,33
+	;svc (0)
 	jp lplp
 lplpx2:
 	ld a,c
@@ -69,6 +80,9 @@ lplp:
 
 prcsp0:
 .db 0
+
+outputmsg:
+.db "Hello!",0
 
 testprc:
 	ld sp,01ef00h
