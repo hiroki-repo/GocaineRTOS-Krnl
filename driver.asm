@@ -276,4 +276,4 @@ putch_addhlde0002bp:
 	ret
 
 vramstartptr4b:
-.fill 1000h*256
+.fill 1000h*13
