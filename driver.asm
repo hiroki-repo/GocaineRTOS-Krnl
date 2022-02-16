@@ -214,21 +214,21 @@ getch:
 	in0 a,(02h)
 	bit 1,a
 	jr z,getch
-	;ld.lil (vramstartptr+0900h+0),bc
-	;ld.lil (vramstartptr+0900h+3),de
-	;ld.lil (vramstartptr+0900h+6),hl
-	;ld.lil (vramstartptr+0900h+9),sp
-	;ld.lil (vramstartptr+0900h+12),a
 	in0 a,(03h)
-	ld.lil (vramstartptr+0900h+12),a
 	cp a,230
 	jr nc,getch_chtty
+	ld (getchbak),a
 	svc (41)
 	ld b,a
 	svc (47)
 	cp a,b
 	jr nz,getch
-	ld.lil a,(vramstartptr+0900h+12)
+	;ld.lil (vramstartptr+0900h+0),bc
+	;ld.lil (vramstartptr+0900h+3),de
+	;ld.lil (vramstartptr+0900h+6),hl
+	;ld.lil (vramstartptr+0900h+9),sp
+	;ld.lil (vramstartptr+0900h+12),a
+	ld a,(getchbak)
 	;ld.lil bc,(vramstartptr+0900h+0)
 	;ld.lil de,(vramstartptr+0900h+3)
 	;ld.lil hl,(vramstartptr+0900h+6)
@@ -238,7 +238,6 @@ getch:
 getch_chtty:
 	sub a,230
 	svc (48)
-	ld (curconsid),a
 	jr getch
 
 ;kbhit()
@@ -257,11 +256,11 @@ kbhit0:
 	ld a,00h
 	ret
 
-curconsid:
+getchbak:
 .db 0
 
 ttyprc_th:
-	ld a,(curconsid)
+	svc (47)
 	ld b,a
 	ld de,1000h
 	ld hl,vramstartptr4b
