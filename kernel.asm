@@ -1,5 +1,6 @@
 .org 000000H
 .assume ADL=0
+versionvl:.equ 0070h
 	di
 	stmix
 	jp.lil init
@@ -50,31 +51,37 @@
 	jp.lil invaliddev_in
 	jp.lil invaliddev_st
 
-	jp.lil add_prc_ind
-	jp.lil get_prc_id
-	jp.lil ter_prc
-	jp.lil ter_prc_other
+	jp.lil add_prc_ind;31
+	jp.lil get_prc_id;32
+	jp.lil ter_prc;33
+	jp.lil ter_prc_other;34
 
-	jp.lil _fopen
-	jp.lil _fseek
-	jp.lil _fread
-	jp.lil _fwrite
-	jp.lil _fclose
+	jp.lil _fopen;35
+	jp.lil _fseek;36
+	jp.lil _fread;37
+	jp.lil _fwrite;38
+	jp.lil _fclose;39
 
-	jp.lil preemptive
+	jp.lil preemptive;40
 
-	jp.lil get_prc_consid
-	jp.lil set_prc_consid
+	jp.lil get_prc_consid;41
+	jp.lil set_prc_consid;42
 
-	jp.lil get_fsstk_ptr
+	jp.lil get_fsstk_ptr;43
 
-	jp.lil setmsghandler
-	jp.lil sendmsg
+	jp.lil setmsghandler;44
+	jp.lil sendmsg;45
 
-	jp.lil getintvecptr
+	jp.lil getintvecptr;46
 
-	jp.lil get_global_consid
-	jp.lil set_global_consid
+	jp.lil get_global_consid;47
+	jp.lil set_global_consid;48
+
+	jp.lil setdma_compat;49
+	jp.lil setsec_compat;50
+	jp.lil settck_compat;51
+
+	jp.lil get_version;52
 init:
 .assume ADL=1
 	di
@@ -184,6 +191,9 @@ add_prc_ind:
 fcestack4em:
 .dl 0,0,0,0
 
+get_version:
+	ld hl,versionvl
+	ret
 svcfromrst:
 	call.il preemptive_0
 	ret
@@ -235,15 +245,23 @@ init_fce_syscall_func_b_main:
 	ld bc,0100h
 	add ix,bc
 	ld a,(init_fce_syscall_funcno+1)
+	and a
+	jr nz,init_fce_syscall_svc
 	ld c,a
 	ld a,(init_fce_syscall_funcno+2)
+	and a
+	jr nz,init_fce_syscall_svc
 	ld b,a
 	ld a,(init_fce_syscall_funcno)
 	or a,b
 	or a,c
 	cp a,32
-	jp c,init_fce_syscall_ilsvc
-
+	jr c,init_fce_syscall_ilsvc
+	cp a,49
+	jr c,init_fce_syscall_svc
+	cp a,52
+	jr c,init_fce_syscall_ilsvc
+init_fce_syscall_svc:
 	;pop af
 	ld.lil bc,(compatstack+64+0)
 	ld.lil de,(compatstack+64+3)
@@ -434,7 +452,7 @@ init_fce_iy_slled1:
 
 init_fce_sll:
 	ld a,h
-	out0 (4),a
+	;out0 (4),a
 	sub a,030h
 	cp a,0
 	jp z,init_fce_sll_b
@@ -1011,8 +1029,16 @@ diskerrchk_compat:
 	ld a,0ffh
 	jp retsequence2
 
-rs232c_out:
-prn_out:
+setdma_compat:
+	ld (0ac900h+18),bc
+	ret.l
+setsec_compat:
+	ld (0ac900h+21),bc
+	ret.l
+settck_compat:
+	ld (0ac900h+24),bc
+	ret.l
+
 invaliddev_out:
 	di
 	ld.lil (compatstack+0),bc
@@ -1021,7 +1047,6 @@ invaliddev_out:
 	ld.lil (compatstack+9),sp
 	ld.lil (compatstack+12),a
 	jp retsequence2
-rs232c_in:
 invaliddev_in:
 	di
 	ld.lil (compatstack+0),bc
@@ -1031,8 +1056,6 @@ invaliddev_in:
 	ld.lil (compatstack+12),a
 	ld a,0h
 	jp retsequence2
-rs232c_st:
-prn_st:
 invaliddev_st:
 	di
 	ld.lil (compatstack+0),bc
@@ -1041,6 +1064,63 @@ invaliddev_st:
 	ld.lil (compatstack+9),sp
 	ld.lil (compatstack+12),a
 	ld a,0h
+	jp retsequence2
+
+
+rs232c_out:
+	di
+	ld.lil (compatstack+0),bc
+	ld.lil (compatstack+3),de
+	ld.lil (compatstack+6),hl
+	ld.lil (compatstack+9),sp
+	ld.lil (compatstack+12),a
+	ld sp,spsp4mp
+	call bios_rs232cout
+	jp retsequence2
+rs232c_in:
+	di
+	ld.lil (compatstack+0),bc
+	ld.lil (compatstack+3),de
+	ld.lil (compatstack+6),hl
+	ld.lil (compatstack+9),sp
+	ld.lil (compatstack+12),a
+	ld sp,spsp4mp
+	call bios_rs232cin
+	ld.lil (compatstack+12),a
+	jp retsequence2
+rs232c_st:
+	di
+	ld.lil (compatstack+0),bc
+	ld.lil (compatstack+3),de
+	ld.lil (compatstack+6),hl
+	ld.lil (compatstack+9),sp
+	ld.lil (compatstack+12),a
+	ld sp,spsp4mp
+	call bios_rs232cst
+	ld.lil (compatstack+12),a
+	jp retsequence2
+
+
+prn_out:
+	di
+	ld.lil (compatstack+0),bc
+	ld.lil (compatstack+3),de
+	ld.lil (compatstack+6),hl
+	ld.lil (compatstack+9),sp
+	ld.lil (compatstack+12),a
+	ld sp,spsp4mp
+	call bios_prnout
+	jp retsequence2
+prn_st:
+	di
+	ld.lil (compatstack+0),bc
+	ld.lil (compatstack+3),de
+	ld.lil (compatstack+6),hl
+	ld.lil (compatstack+9),sp
+	ld.lil (compatstack+12),a
+	ld sp,spsp4mp
+	call bios_prnst
+	ld.lil (compatstack+12),a
 	jp retsequence2
 
 sistran_compat:
@@ -1162,6 +1242,8 @@ add_prc_lplp3bp:
 ter_prc:
 	ld a,(pid)
 ter_prc_other:
+	and a
+	jp z,preemptive_lplpkk
 	ld de,45
 	ld hl,backupstk4p
 	and a
@@ -1797,3 +1879,8 @@ bios_getch: .equ $+(5*1)
 bios_kbhit: .equ $+(5*2)
 bios_fsdrv: .equ $+(5*3)
 bios_ttyprc_th: .equ $+(5*4)
+bios_rs232cout: .equ $+(5*5)
+bios_rs232cin: .equ $+(5*6)
+bios_rs232cst: .equ $+(5*7)
+bios_prnout: .equ $+(5*8)
+bios_prnst: .equ $+(5*9)

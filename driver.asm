@@ -1,4 +1,4 @@
-.org 4200h
+.org 4300h
 .assume ADL=1
 .addinstr SVC (*)	 71ED 5 NOP 2 0
 	jp.lil putch
@@ -6,9 +6,24 @@
 	jp.lil kbhit
 	jp.lil fsdrv
 	jp.lil ttyprc_th
+	jp.lil rs232c_out
+	jp.lil rs232c_in
+	jp.lil rs232c_st
+	jp.lil prn_out
+	jp.lil prn_st
 vramstartptr:
 .fill 1000h
-
+rs232c_out:
+	ret
+rs232c_in:
+rs232c_st:
+	ld a,0
+	ret
+prn_out:
+	ret
+prn_st:
+	ld a,0
+	ret
 
 fsdrv:
 	ld (spbak),sp
