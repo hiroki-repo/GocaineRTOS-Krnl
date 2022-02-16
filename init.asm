@@ -41,13 +41,13 @@ clrset3:
 	ld hl,cpmprc
 	svc (31)
 	ld hl,testprc
-	svc (31)
+	;svc (31)
 	ld sp,01ff00h
 	svc (32)
 	;out0 (4),a
 	ld hl,0a0000h
 	ld c,2
-	;jp lplp
+	jp lplp
 lplpx2:
 	ld a,c
 	ld (hl),a

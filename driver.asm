@@ -220,8 +220,15 @@ getch:
 	;ld.lil (vramstartptr+0900h+9),sp
 	;ld.lil (vramstartptr+0900h+12),a
 	in0 a,(03h)
+	ld.lil (vramstartptr+0900h+12),a
 	cp a,230
 	jr nc,getch_chtty
+	svc (41)
+	ld b,a
+	svc (47)
+	cp a,b
+	jr nz,getch
+	ld.lil a,(vramstartptr+0900h+12)
 	;ld.lil bc,(vramstartptr+0900h+0)
 	;ld.lil de,(vramstartptr+0900h+3)
 	;ld.lil hl,(vramstartptr+0900h+6)
@@ -236,8 +243,11 @@ getch_chtty:
 
 ;kbhit()
 kbhit:
+	svc (41)
 	ld b,a
-	;svc (41)
+	svc (47)
+	cp a,b
+	jr nz,kbhit0
 	in0 a,(02h)
 	bit 1,a
 	jr z,kbhit0
