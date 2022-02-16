@@ -22,9 +22,9 @@
 #define get_fsstk_ptr call 0100h+(5*43)
 
 #define setmsghandler(xxxx) ld hl,xxxx \ call 0100h+(5*44)
-#define sendmsg(xxxx) ld a,xxxx \ call 0100h+(5*44)
+#define sendmsg(xxxx) ld a,xxxx \ call 0100h+(5*45)
 
-#define getintvecptr call 0100h+(5*45)
+#define getintvecptr call 0100h+(5*46)
 
 .addinstr SVC (*)	 71ED 5 NOP 2 0
 
