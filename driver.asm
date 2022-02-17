@@ -283,6 +283,7 @@ getchbak:
 .db 0
 
 ttyprc_th:
+	di
 	svc (47)
 	;call 0100h+(5*47)
 	ld b,a
@@ -297,6 +298,7 @@ putch_addhlde0002bp:
 	ld bc,0400h
 	ld de,0ac000h
 	ldir
+	ei
 	ret
 
 vramstartptr4b:

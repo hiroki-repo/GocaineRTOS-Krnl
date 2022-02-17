@@ -3,10 +3,8 @@
 #include "stdcall.inc"
 	ld sp,01ff00h
 	rst 8
-	;ld hl,outputmsg
-	;svc (53)
-	svc (52)
-	svc (32)
+	;svc (52)
+	;svc (32)
 	;out0 (4),a
 	ld a,255
 	ld (0ac603h),a
@@ -41,8 +39,11 @@ clrset3:
 	;ld a,'@'
 	;svc (0)
 
-	ld a,'A'
-	svc (0)
+	;ld a,'A'
+	;svc (0)
+
+	ld hl,outputmsg
+	call strprint
 
 	ld hl,cpmprc
 	svc (31)
@@ -81,8 +82,21 @@ lplp:
 prcsp0:
 .db 0
 
+strprint:
+	di
+	ld a,(hl)
+	call.il 0100h+(5*0)
+	inc hl
+	ld a,(hl)
+	and a
+	jr nz,strprint
+	ei
+	ret
+
 outputmsg:
-.db "Hello!",0
+.db "Starting Gocaine RTOS...",0dh,0ah,0dh,0ah,0
+outputmsg2:
+.db "You can switch from tty1 (ctrl+f1) to tty12 (ctrl+f12) to use CP/M Virtual machine!",0dh,0ah,0
 
 testprc:
 	ld sp,01ef00h
@@ -121,6 +135,8 @@ lplp2:
 
 cpmprc:
 	ld sp,01df00h
+	ld hl,outputmsg2
+	call strprint
 	ld a,11
 	svc(42)
 	;call.il 0100h+(5*0)
