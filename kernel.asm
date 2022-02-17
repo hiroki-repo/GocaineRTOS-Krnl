@@ -631,7 +631,7 @@ putch_spwait:
 	set 1,a
 	ld (compatstack_semaphore),a
 	ld a,(backupstk+39)
-	di
+	;di
 	ld.lil (compatstack+0),bc
 	ld.lil (compatstack+3),de
 	ld.lil (compatstack+6),hl
@@ -671,26 +671,27 @@ putch16_spwait:
 	jp retsequence2
 
 getch:
-	ld (backupstk+39),a
+	;ld (backupstk+39),a
 getch_spwait:
-	ld a,(compatstack_semaphore)
-	bit 1,a
-	jr nz,getch_spwait
-	set 1,a
-	ld (compatstack_semaphore),a
-	ld a,(backupstk+39)
-	ld.lil (compatstack+0),bc
-	ld.lil (compatstack+3),de
-	ld.lil (compatstack+6),hl
-	ld.lil (compatstack+9),sp
-	ld.lil (compatstack+12),a
-	ld sp,spsp4mp
+	;ld a,(compatstack_semaphore)
+	;bit 1,a
+	;jr nz,getch_spwait
+	;set 1,a
+	;ld (compatstack_semaphore),a
+	;ld a,(backupstk+39)
+	;ld.lil (compatstack+0),bc
+	;ld.lil (compatstack+3),de
+	;ld.lil (compatstack+6),hl
+	;ld.lil (compatstack+9),sp
+	;ld.lil (compatstack+12),a
+	;ld sp,spsp4mp
 	call bios_getch
-	ld.lil (compatstack+12),a
-	ld a,(compatstack_semaphore)
-	res 1,a
-	ld (compatstack_semaphore),a
-	jp retsequence2
+	;ld.lil (compatstack+12),a
+	;ld a,(compatstack_semaphore)
+	;res 1,a
+	;ld (compatstack_semaphore),a
+	;jp retsequence2
+	ret.l
 kbhit:
 	ld (backupstk+39),a
 kbhit_spwait:
@@ -720,6 +721,7 @@ get_fsstk_ptr:
 	ret
 
 kbint:
+	jp.lil bios_keyhandler
 	ei
 	ret.l
 
@@ -1925,3 +1927,4 @@ bios_rs232cin: .equ $+(5*6)
 bios_rs232cst: .equ $+(5*7)
 bios_prnout: .equ $+(5*8)
 bios_prnst: .equ $+(5*9)
+bios_keyhandler: .equ $+(5*10)

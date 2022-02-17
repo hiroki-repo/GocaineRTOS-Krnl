@@ -11,6 +11,7 @@
 	jp.lil rs232c_st
 	jp.lil prn_out
 	jp.lil prn_st
+	jp.lil keyhandler
 vramstartptr:
 .fill 1000h
 rs232c_out:
@@ -240,20 +241,38 @@ putch_cr:
 	jp.lil putchrox
 ;getch()
 getch:
-	in0 a,(02h)
-	bit 1,a
-	jr z,getch
-	in0 a,(03h)
-	cp a,230
-	jr nc,getch_chtty
-	ld (getchbak),a
-	;svc (41)
+	push bc
+getch_:
+	ld a,(getchbak+1)
+	and a
+	jr z,getch_
+	svc (41)
 	call 0100h+(5*41)
 	ld b,a
-	;svc (47)
+	svc (47)
 	call 0100h+(5*47)
 	cp a,b
-	jr nz,getch
+	jr nz,getch_	
+	pop bc
+	ld a,0
+	ld (getchbak+1),a
+	ld a,(getchbak)
+	ret
+
+	;in0 a,(02h)
+	;bit 1,a
+	;jr z,getch
+	;in0 a,(03h)
+	;cp a,230
+	;jr nc,getch_chtty
+	;ld (getchbak),a
+	;svc (41)
+	;call 0100h+(5*41)
+	;ld b,a
+	;svc (47)
+	;call 0100h+(5*47)
+	;cp a,b
+	;jr nz,getch_rst8h
 	;ld.lil (vramstartptr+0900h+0),bc
 	;ld.lil (vramstartptr+0900h+3),de
 	;ld.lil (vramstartptr+0900h+6),hl
@@ -266,11 +285,7 @@ getch:
 	;ld.lil sp,(vramstartptr+0900h+9)
 	;ld.lil a,(vramstartptr+0900h+12)
 	ret
-getch_chtty:
-	sub a,230
-	;svc (48)
-	call 0100h+(5*48)
-	jr getch
+	;jr keyhandler
 
 ;kbhit()
 kbhit:
@@ -281,20 +296,22 @@ kbhit:
 	call 0100h+(5*47)
 	cp a,b
 	jr nz,kbhit0
-	in0 a,(02h)
-	bit 1,a
-	jr z,kbhit0
-	ld a,0ffh
+	ld a,(getchbak+1)
 	ret
+	;in0 a,(02h)
+	;bit 1,a
+	;jr z,kbhit0
+	;ld a,0ffh
+	;ret
 kbhit0:
 	ld a,00h
 	ret
 
 getchbak:
-.db 0
+.db 0,0
 
 ttyprc_th:
-	di
+	;di
 	svc (47)
 	;call 0100h+(5*47)
 	ld b,a
@@ -311,6 +328,44 @@ putch_addhlde0002bp:
 	ldir
 	ei
 	ret
+
+keyhandler:
+	;out0 (4),a
+	in0 a,(02h)
+	bit 1,a
+	jr nz,keyhandler_1
+	ld a,00
+	ld (getchbak+1),a
+	ei
+	ret.l
+keyhandler_1:
+	in0 a,(03h)
+	cp a,230
+	jr nc,getch_chtty
+	ld (getchbak),a
+	ld a,0ffh
+	ld (getchbak+1),a
+	;svc (41)
+	call 0100h+(5*41)
+	ld b,a
+	;svc (47)
+	call 0100h+(5*47)
+	cp a,b
+	jr nz,getch_rst8h
+	ei
+	ret.l
+getch_chtty:
+	sub a,230
+	;svc (48)
+	call 0100h+(5*48)
+	ei
+	ret.l
+	;jr keyhandler
+
+getch_rst8h:
+	rst 8h
+	ei
+	ret.l
 
 vramstartptr4b:
 .fill 1000h*13
