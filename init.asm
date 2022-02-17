@@ -49,6 +49,8 @@ clrset3:
 	svc (31)
 	ld hl,testprc
 	;svc (31)
+	ld hl,si_have_to_go_the_picasso
+	svc (31)
 	ld sp,01ff00h
 	svc (32)
 	;out0 (4),a
@@ -81,6 +83,82 @@ lplp:
 
 prcsp0:
 .db 0
+
+si_have_to_go_the_picasso:
+	ld sp,01fc00h
+	ld a,10
+	;svc(42)
+	call 0100h+(5*42)
+	ld hl,02221h
+	call.il 0100h+(5*54)
+	;svc (54)
+	ld hl,03066h
+	call.il 0100h+(5*54)
+	;svc (54)
+	ld hl,03e65h
+	call.il 0100h+(5*54)
+	;svc (54)
+	ld hl,0483bh
+	call.il 0100h+(5*54)
+	;svc (54)
+	ld hl,0244fh
+	call.il 0100h+(5*54)
+	;svc (54)
+	ld hl,02554h
+	call.il 0100h+(5*54)
+	;svc (54)
+	ld hl,0252bh
+	call.il 0100h+(5*54)
+	;svc (54)
+	ld hl,0253dh
+	call.il 0100h+(5*54)
+	;svc (54)
+	ld hl,0252bh
+	call.il 0100h+(5*54)
+	;svc (54)
+	ld hl,0256ch
+	call.il 0100h+(5*54)
+	;svc (54)
+	ld hl,02543h
+	call.il 0100h+(5*54)
+	;svc (54)
+	ld hl,02538h
+	call.il 0100h+(5*54)
+	;svc (54)
+	ld hl,0244bh
+	call.il 0100h+(5*54)
+	;svc (54)
+	ld hl,03954h
+	call.il 0100h+(5*54)
+	;svc (54)
+	ld hl,0242dh
+	call.il 0100h+(5*54)
+	;svc (54)
+	ld hl,0245eh
+	call.il 0100h+(5*54)
+	;svc (54)
+	ld hl,02437h
+	call.il 0100h+(5*54)
+	;svc (54)
+	ld hl,02467h
+	call.il 0100h+(5*54)
+	;svc (54)
+	ld hl,02426h
+	call.il 0100h+(5*54)
+	;svc (54)
+	ld hl,0212ah
+	call.il 0100h+(5*54)
+	;svc (54)
+	ld hl,0212ah
+	call.il 0100h+(5*54)
+	;svc (54)
+	ld a,0dh
+	svc (0)
+	ld a,0ah
+	svc (0)
+si_have_to_go_the_picasso_lplp:
+	jp si_have_to_go_the_picasso_lplp
+
 
 strprint:
 	di

@@ -97,6 +97,10 @@ putch_addhlde0000bp:
 	ld.lil a,(vramstartptr+0900h+12)
 	ld.lil bc,(vramstartptr+0900h+15)
 	ld.lil hl,vramstartptr+0000h
+	ld.lil a,(vramstartptr+0900h+7)
+	and a
+	ld.lil a,(vramstartptr+0900h+6)
+	jr nz,putch_bpspchrseq
 	cp 07h
 	jp.lil z,putch_bel
 	cp 08h
@@ -105,6 +109,7 @@ putch_addhlde0000bp:
 	jp.lil z,putch_lf
 	cp 0dh
 	jp.lil z,putch_cr
+putch_bpspchrseq:
 	ld a,c
 	cp 32
 	jp.lil nc,putch_retx
@@ -143,7 +148,12 @@ putch_1_bp:
 	ld h,a
 	ld.lil bc,(vramstartptr+0900h+15)
 	ld.lil a,(vramstartptr+0900h+12)
+	ld.lil a,(vramstartptr+0900h+6)
 	ld.lil (hl),a
+	inc hl
+	ld.lil a,(vramstartptr+0900h+7)
+	ld.lil (hl),a
+	dec hl
 	ld.lil bc,(vramstartptr+0900h+15)
 	inc c
 putchrox:
@@ -216,6 +226,7 @@ putch_lf_retx2:
 putch_lf_retx2_clr:
 	ld (hl),a
 	inc hl
+	ld (hl),a
 	inc hl
 	djnz putch_lf_retx2_clr
 	ld.lil bc,(vramstartptr+0900h+15)

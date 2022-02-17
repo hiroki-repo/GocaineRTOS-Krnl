@@ -84,6 +84,7 @@ versionvl:.equ 0070h
 	jp.lil get_version;52
 
 	jp.lil strprint;53
+	jp.lil putch16;54
 init:
 .assume ADL=1
 	di
@@ -263,6 +264,8 @@ init_fce_syscall_func_b_main:
 	jr c,init_fce_syscall_svc
 	cp a,52
 	jr c,init_fce_syscall_ilsvc
+	cp a,54
+	jr z,init_fce_syscall_ilsvc
 init_fce_syscall_svc:
 	;pop af
 	ld.lil bc,(compatstack+64+0)
@@ -625,6 +628,31 @@ putch_spwait:
 	ld a,(compatstack_semaphore)
 	bit 1,a
 	jr nz,putch_spwait
+	set 1,a
+	ld (compatstack_semaphore),a
+	ld a,(backupstk+39)
+	di
+	ld.lil (compatstack+0),bc
+	ld.lil (compatstack+3),de
+	ld.lil (compatstack+6),hl
+	ld.lil (compatstack+9),sp
+	ld.lil (compatstack+12),a
+	ld sp,spsp4mp
+	;out0 (4),a
+	ld l,a
+	ld h,0
+	call bios_putch
+	ld a,(compatstack_semaphore)
+	res 1,a
+	ld (compatstack_semaphore),a
+	jp retsequence2
+
+putch16:
+	ld (backupstk+39),a
+putch16_spwait:
+	ld a,(compatstack_semaphore)
+	bit 1,a
+	jr nz,putch16_spwait
 	set 1,a
 	ld (compatstack_semaphore),a
 	ld a,(backupstk+39)
