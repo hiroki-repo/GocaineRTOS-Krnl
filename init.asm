@@ -156,6 +156,9 @@ si_have_to_go_the_picasso:
 	svc (0)
 	ld a,0ah
 	svc (0)
+	ld h,1
+	ld l,'~'
+	call.il 0100h+(5*54)
 si_have_to_go_the_picasso_lplp:
 	jp si_have_to_go_the_picasso_lplp
 

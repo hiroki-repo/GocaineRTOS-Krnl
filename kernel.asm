@@ -85,6 +85,8 @@ versionvl:.equ 0070h
 
 	jp.lil strprint;53
 	jp.lil putch16;54
+
+	jp.lil getidps;55
 init:
 .assume ADL=1
 	di
@@ -619,6 +621,10 @@ retsequence2p16_1:
 	ld.lil sp,(compatstack+16+9)
 	ld.lil a,(compatstack+16+12)
 	ei
+	ret
+
+getidps:
+	ld hl,idps
 	ret
 
 
@@ -1908,6 +1914,10 @@ spsp4taskstk:
 .dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 spsp4taskstk2:
 .dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+
+idps:
+.db 00h,00h,00h,01h,00h,05h,00h,01h,08h,029h,03dh,033h,07ah,0e6h,0c5h,07dh
+
 
 spsp4taskstksto:
 .dl 0,0,0,0
