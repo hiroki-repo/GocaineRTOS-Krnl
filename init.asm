@@ -156,10 +156,18 @@ si_have_to_go_the_picasso:
 	svc (0)
 	ld a,0ah
 	svc (0)
-	ld h,1
-	ld l,'~'
-	call.il 0100h+(5*54)
 si_have_to_go_the_picasso_lplp:
+	call.il 0100h+(5*1)
+	cp a,32
+	jr c,si_have_to_go_the_picasso_lplpx
+	ld h,1
+	ld l,a
+	call.il 0100h+(5*54)
+	jp si_have_to_go_the_picasso_lplp
+si_have_to_go_the_picasso_lplpx:
+	ld h,0
+	ld l,a
+	call.il 0100h+(5*54)
 	jp si_have_to_go_the_picasso_lplp
 
 
