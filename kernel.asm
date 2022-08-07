@@ -1357,7 +1357,9 @@ setnmihandlervect:
 	ld (nmihandlervect),hl
 	ret
 nmihandlervect:
-	.dl 0
+	.dl nmihandlervect_nul
+nmihandlervect_nul:
+	ret
 	
 preemptive4newproc:
 	di
