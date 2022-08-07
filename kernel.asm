@@ -88,6 +88,8 @@ versionvl:.equ 0070h
 	jp.lil putch16;54
 
 	jp.lil getidps;55
+
+	jp.lil setnmihandlervect;56
 init:
 .assume ADL=1
 	di
@@ -1344,7 +1346,18 @@ sendmsghdl:
 	jp (hl)
 
 nmihandler:
+	ld (backupstk+6),hl
+	ld hl,(nmihandlervect)
+	call nmihandler_1
+	ld hl,(backupstk+6)
 	retn.l
+nmihandler_1:
+	jp (hl)
+setnmihandlervect:
+	ld (nmihandlervect),hl
+	ret
+nmihandlervect:
+	.dl 0
 	
 preemptive4newproc:
 	di
