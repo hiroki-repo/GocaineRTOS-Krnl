@@ -9,7 +9,8 @@ versionvl:.equ 0070h
 .fill 10h-$
 	jp.lil addprcfromrst
 .fill 66h-$
-	jp.lil preemptive
+	jp.lil nmihandler
+	;jp.lil preemptive
 .fill 256-$
 	jp.lil putch
 	jp.lil getch
@@ -1341,6 +1342,9 @@ sendmsg:
 
 sendmsghdl:
 	jp (hl)
+
+nmihandler:
+	retn.l
 	
 preemptive4newproc:
 	di
@@ -1366,12 +1370,14 @@ preemptive_aft:
 	pop af
 	ld sp,(backupstk+24)
 	ei
+	ret.l
 	reti.l
 preemptive_aft_16bit:
 	ld sp,backupstk+33
 	pop af
 	ld sp,(backupstk+24)
 	ei
+	ret
 	reti
 preemptive_lr:
 	ld (backupstk+0),bc
@@ -1464,12 +1470,14 @@ preemptive_0_aft:
 	pop af
 	ld sp,(backupstk+24)
 	ei
+	ret.l
 	reti.l
 preemptive_0_aft_16bit:
 	ld sp,backupstk+33
 	pop af
 	ld sp,(backupstk+24)
 	ei
+	ret
 	reti
 preemptive_0_lr:
 	ld (backupstk+0),bc
@@ -1492,6 +1500,9 @@ preemptive_0_lr:
 	pop hl
 	push hl
 	ld (backupstk+33),hl
+	ld hl,0
+	add.s hl,sp
+	ld (backupstk+43),hl
 	ld a,mb
 	ld (backupstk+37),a
 	ld a,(pid)
@@ -1529,6 +1540,8 @@ preemptive_0_lplp2bp:
 	ld de,backupstk
 	ld bc,45
 	ldir
+	ld hl,(backupstk+43)
+	ld.s sp,hl
 	ld a,(backupstk+36)
 	bit 0,a
 	jr z,preemptive_0_lplpk
