@@ -1517,7 +1517,7 @@ preemptive_0_lr:
 	ld (backupstk+33),hl
 	ld hl,0
 	add.s hl,sp
-	ld (backupstk+43),hl
+	ld (backupstk+44),hl
 	ld a,mb
 	ld (backupstk+37),a
 	ld a,(pid)
@@ -1555,7 +1555,7 @@ preemptive_0_lplp2bp:
 	ld de,backupstk
 	ld bc,45
 	ldir
-	ld hl,(backupstk+43)
+	ld hl,(backupstk+44)
 	ld.s sp,hl
 	ld a,(backupstk+36)
 	bit 0,a
@@ -1579,7 +1579,7 @@ preemptive_0_lplp2bp:
 	ld a,(backupstk+27)
 	jp preemptive_0_aft
 backupstk:
-.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+.dl 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 .fill 256-($%256)
 vector:
 .dl preemptive
